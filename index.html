@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f4f5f7">
-<title>GymSüd – Haus C Rohbau</title>
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#f2f3f5">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#111315">
+<title>GymSüd – Haus C · iOS Zoom</title>
 <script>
 /* iOS WebKit sticky-header rasterization workaround, applied before first paint. */
 if(/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1)) document.documentElement.classList.add('ios-webkit');
@@ -25,14 +26,12 @@ if(/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacInt
 html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);overscroll-behavior:none}
 body{user-select:none;padding-bottom:env(safe-area-inset-bottom)}
 button,input,textarea{font:inherit}
-/* Solid, non-composited header on iOS: iOS Safari can rasterize sticky small text softly. */
-.app-header{position:sticky;top:0;z-index:20;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;background:var(--sheet);-webkit-backdrop-filter:none;backdrop-filter:none;border-bottom:1px solid color-mix(in srgb,var(--soft) 65%, transparent)}
-@supports (-webkit-touch-callout:none){
-  .app-header{position:relative;top:auto;-webkit-transform:none;transform:none;filter:none;-webkit-filter:none;isolation:auto}
-  .eyebrow{font-size:13px;letter-spacing:0}
-}
-.ios-webkit .app-header{position:relative;top:auto;-webkit-transform:none;transform:none;-webkit-filter:none;filter:none;isolation:auto}
-.ios-webkit .eyebrow{font-size:13px;letter-spacing:0}
+/* The iOS WebKit page edge can glass-blur small text near the system chrome.
+   Keep the header in document flow on a fully opaque surface, with extra top clearance. */
+.app-header{position:relative;top:auto;z-index:20;padding:16px 14px 12px;background:var(--sheet);opacity:1;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;filter:none!important;-webkit-filter:none!important;transform:none!important;border-bottom:1px solid var(--soft)}
+.ios-webkit .app-header{padding-top:calc(34px + env(safe-area-inset-top));background:var(--sheet)}
+.app-header,.app-header *{text-shadow:none!important;-webkit-filter:none!important;filter:none!important}
+.app-header .eyebrow{font-size:15px;line-height:1.25;letter-spacing:0;font-weight:800;color:var(--text)}
 .header-top{display:flex;align-items:center;justify-content:space-between;gap:14px}
 .project-block{min-width:0}.eyebrow{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.025em}
 .project-title{font-size:17px;font-weight:780;line-height:1.15;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -51,6 +50,9 @@ button,input,textarea{font:inherit}
 .statusbar{display:flex;align-items:center;gap:10px;padding:8px 14px;font-size:12px;color:var(--muted);flex-wrap:wrap}.statusbar b{color:var(--text)}
 .viewer-shell{padding:0 10px 16px}
 .viewer{position:relative;overflow:auto;-webkit-overflow-scrolling:touch;background:var(--sheet);border:1px solid var(--soft);border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.05);touch-action:pan-x pan-y}
+.viewer.modal-frozen{overflow:hidden!important;-webkit-overflow-scrolling:auto!important}
+html.modal-open{overflow:hidden!important;overscroll-behavior:none}
+body.modal-open{position:fixed!important;overflow:hidden!important;left:0;right:0;width:100%;overscroll-behavior:none}
 .stage{width:1180px;max-width:none;transform-origin:0 0}
 svg{display:block;width:100%;height:auto;background:var(--sheet)}
 .facade-outline{fill:color-mix(in srgb,var(--soft) 10%, transparent);stroke:color-mix(in srgb,var(--soft) 55%, transparent);stroke-width:.9;vector-effect:non-scaling-stroke}
@@ -94,11 +96,11 @@ svg{display:block;width:100%;height:auto;background:var(--sheet)}
 .bulk-choice{min-height:40px;padding:7px 5px;border-radius:10px;border:1px solid var(--soft);background:var(--bg);color:var(--text);font-size:12px;font-weight:700;line-height:1.1}
 .bulk-choice.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%, transparent)}
 .bulk-summary{padding:0 0 12px;color:var(--muted);font-size:13px}
-.scrim{position:fixed;inset:0;background:rgba(0,0,0,.36);z-index:40;display:none}.scrim.show{display:block}
-.sheet{position:fixed;z-index:41;left:0;right:0;bottom:0;transform:translateY(105%);transition:transform .22s ease;background:var(--sheet);border-radius:22px 22px 0 0;box-shadow:0 -10px 50px rgba(0,0,0,.25);max-height:86vh;overflow:auto;visibility:hidden;padding:8px 16px calc(18px + env(safe-area-inset-bottom))}
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.36);z-index:40;display:none;touch-action:none;overscroll-behavior:none}.scrim.show{display:block}
+.sheet{position:fixed;z-index:41;left:0;right:0;bottom:0;transform:translateY(105%);transition:transform .22s ease;background:var(--sheet);border-radius:22px 22px 0 0;box-shadow:0 -10px 50px rgba(0,0,0,.25);max-height:86vh;max-height:86dvh;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;visibility:hidden;padding:8px 16px calc(18px + env(safe-area-inset-bottom))}
 .sheet.show{transform:translateY(0);visibility:visible}
 /* Large swipe target around the visible 42×5 px grip for finger use. */
-.grabber-wrap{display:flex;justify-content:center;align-items:flex-start;min-height:38px;padding:11px 0 17px;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:grab}
+.grabber-wrap{display:flex;justify-content:center;align-items:flex-start;min-height:52px;padding:17px 0 26px;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:grab}
 .grabber{width:42px;height:5px;border-radius:999px;background:var(--soft);pointer-events:none}
 .grabber-wrap:active{cursor:grabbing}.grabber.dragging{opacity:.8}
 .sheet h2{font-size:20px;margin:0 0 2px}.sheet-sub{font-size:13px;color:var(--muted);margin-bottom:14px}
@@ -207,7 +209,7 @@ function renderStatic(){
   document.querySelectorAll('#viewMenu .nav-option[data-view]').forEach(btn=>btn.classList.toggle('current', btn.dataset.view===currentView));
   document.getElementById('openingCount').textContent = currentGeometry().length;
   document.getElementById('modeTitle').textContent=currentMode==='fenster'?'Fensterbänder · Fensterelemente':'Fenster-Rohbauöffnungen';
-  document.getElementById('modeLegend').textContent=currentMode==='fenster' ? (currentView==='east' ? 'Fensterbänder Ost vollständig eingepflegt. Kurzer Tipp: Auswahl · Langer Tipp: Details.' : 'Fensterbänder mit zugeordneten Paneelen, Lochfenster im UG, EG beidseits sowie TRH-Elemente. Kurzer Tipp: Auswahl · Langer Tipp: Details.') : 'Kurzer Tipp: Feld auswählen. Langer Tipp: Einzel-Kontextmenü öffnen. Die Mehrfachauswahl dient der Schnellauswahl über Status setzen.';
+  document.getElementById('modeLegend').textContent=(currentMode==='fenster' ? (currentView==='east' ? 'Fensterbänder Ost vollständig eingepflegt. Kurzer Tipp: Auswahl · Langer Tipp: Details.' : 'Fensterbänder mit zugeordneten Paneelen, Lochfenster im UG, EG beidseits sowie TRH-Elemente. Kurzer Tipp: Auswahl · Langer Tipp: Details.') : 'Kurzer Tipp: Feld auswählen. Langer Tipp: Einzel-Kontextmenü öffnen. Die Mehrfachauswahl dient der Schnellauswahl über Status setzen.') + ' Zwei Finger: vergrößern/verkleinern.';
   document.getElementById('objectCountWrap').lastChild.textContent = currentMode==='fenster'?' Bauteile (Fenster, Türen, Paneele)':' Rohbauöffnungen';
   document.getElementById('roughMode').classList.toggle('active',currentMode==='rohbau');
   document.getElementById('windowMode').classList.toggle('active',currentMode==='fenster');
@@ -256,15 +258,80 @@ document.addEventListener('selectionchange',()=>{
   const anchor=window.getSelection?.()?.anchorNode;
   if(anchor && facadeViewer.contains(anchor)) clearAccidentalSelection();
 });
+/* Two-finger pinch zooms ONLY the drawing, never the header or the modal.
+   Keep the map-coordinate underneath the fingers stable as the scale changes. */
+let pinchActive=false;
+let pinchGesture=null;
+let suppressFieldGesture=false;
+const pendingFieldPresses=new Set();
+function cancelPendingFieldPresses(){
+  for(const cancel of pendingFieldPresses) cancel();
+  pendingFieldPresses.clear();
+}
+function pinchDistance(a,b){return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY);}
+function pinchMidpoint(a,b){return {x:(a.clientX+b.clientX)/2,y:(a.clientY+b.clientY)/2};}
+function beginPinch(touches){
+  if(touches.length!==2 || document.querySelector('.sheet.show'))return;
+  cancelPendingFieldPresses();suppressFieldGesture=true;pinchActive=true;
+  const midpoint=pinchMidpoint(touches[0],touches[1]);
+  const rect=viewer.getBoundingClientRect();
+  pinchGesture={distance:Math.max(1,pinchDistance(touches[0],touches[1])),initialScale:scale,
+    anchorX:(viewer.scrollLeft+midpoint.x-rect.left)/scale,
+    anchorY:(viewer.scrollTop+midpoint.y-rect.top)/scale};
+}
+viewer.addEventListener('touchstart',e=>{
+  if(e.touches.length===2){beginPinch(e.touches);e.preventDefault();}
+  else if(e.touches.length>2 && pinchActive){pinchGesture=null;e.preventDefault();}
+},{passive:false});
+viewer.addEventListener('touchmove',e=>{
+  if(!pinchActive || e.touches.length<2)return;
+  e.preventDefault();
+  if(e.touches.length!==2 || !pinchGesture)return;
+  const midpoint=pinchMidpoint(e.touches[0],e.touches[1]);
+  const rect=viewer.getBoundingClientRect();
+  const nextScale=Math.max(.2,Math.min(3.5,pinchGesture.initialScale*pinchDistance(e.touches[0],e.touches[1])/pinchGesture.distance));
+  scale=nextScale;applyScale();
+  viewer.scrollLeft=pinchGesture.anchorX*scale-(midpoint.x-rect.left);
+  if(viewer.scrollHeight>viewer.clientHeight+1){
+    viewer.scrollTop=pinchGesture.anchorY*scale-(midpoint.y-rect.top);
+  }else{
+    // On a full-height SVG viewer the page, not the viewer, owns vertical scroll.
+    const viewerDocumentTop=viewer.getBoundingClientRect().top+window.scrollY;
+    window.scrollTo(window.scrollX,Math.max(0,viewerDocumentTop+pinchGesture.anchorY*scale-midpoint.y));
+  }
+},{passive:false});
+function finishPinch(e){
+  if(!pinchActive)return;
+  // Keep field taps suppressed until ALL fingers have left the screen.
+  if(e.touches.length<2) pinchGesture=null;
+  if(e.touches.length===0){pinchActive=false;setTimeout(()=>{suppressFieldGesture=false;},80);}
+}
+viewer.addEventListener('touchend',finishPinch,{passive:true});
+viewer.addEventListener('touchcancel',finishPinch,{passive:true});
 function installGestures(el,id){
   let timer=null, sx=0, sy=0, moved=false, longFired=false;
-  const down = e=>{ if(e.button!==undefined && e.button!==0) return; const p = e.touches ? e.touches[0] : e; sx=p.clientX; sy=p.clientY; moved=false; longFired=false; timer=setTimeout(()=>{ if(!moved){ longFired=true; clearAccidentalSelection(); openSheet(id); clearAccidentalSelection(); } }, 400); };
-  const move = e=>{ const p = e.touches ? e.touches[0] : e; if(Math.hypot(p.clientX-sx, p.clientY-sy) > 10){ moved=true; clearTimeout(timer); } };
-  const up = ()=>{ clearTimeout(timer); if(longFired){ clearAccidentalSelection(); return; } if(!moved) toggleSelect(id); };
-  el.addEventListener('pointerdown', down);
-  el.addEventListener('pointermove', move);
-  el.addEventListener('pointerup', up);
-  el.addEventListener('pointercancel', ()=>clearTimeout(timer));
+  const cancel=()=>{clearTimeout(timer);timer=null;pendingFieldPresses.delete(cancel);moved=true;};
+  const down=e=>{
+    if((e.button!==undefined&&e.button!==0)||pinchActive||suppressFieldGesture||modalLocked)return;
+    const p=e; sx=p.clientX;sy=p.clientY;moved=false;longFired=false;
+    timer=setTimeout(()=>{
+      pendingFieldPresses.delete(cancel);timer=null;
+      if(!moved&&!pinchActive&&!suppressFieldGesture&&!modalLocked){
+        longFired=true;clearAccidentalSelection();openSheet(id);clearAccidentalSelection();
+      }
+    },430);
+    pendingFieldPresses.add(cancel);
+  };
+  const move=e=>{if(Math.hypot(e.clientX-sx,e.clientY-sy)>10)cancel();};
+  const up=()=>{
+    clearTimeout(timer);timer=null;pendingFieldPresses.delete(cancel);
+    if(longFired){clearAccidentalSelection();return;}
+    if(!moved&&!pinchActive&&!suppressFieldGesture&&!modalLocked)toggleSelect(id);
+  };
+  el.addEventListener('pointerdown',down);
+  el.addEventListener('pointermove',move);
+  el.addEventListener('pointerup',up);
+  el.addEventListener('pointercancel',cancel);
 }
 function renderWindowBands(){
   windowLayer.innerHTML='';
@@ -334,6 +401,30 @@ function toggleSelect(id){ selected.has(id) ? selected.delete(id) : selected.add
 function clearSelection(){ selected.clear(); renderOpenings();renderWindowBands(); }
 function updateSelectionUI(){ document.getElementById('selectedCount').textContent = selected.size; document.getElementById('selectionBar').classList.toggle('show', selected.size > 0); }
 function findGeom(id){ return currentMode==='fenster'?windowById.get(id):Object.values(views).flatMap(v=>v.geometry).find(x=>x.id===id); }
+/* Modal isolation: stop the document AND the inertial SVG scroller behind a sheet.
+   Remember the page position so dismissing the sheet never jumps the facade. */
+let modalScrollY=0;
+let modalLocked=false;
+function lockModalBackground(){
+  if(modalLocked) return;
+  modalScrollY=window.scrollY || window.pageYOffset || 0;
+  modalLocked=true;
+  document.documentElement.classList.add('modal-open');
+  document.body.classList.add('modal-open');
+  document.body.style.top=`-${modalScrollY}px`;
+  viewer.classList.add('modal-frozen');
+}
+function unlockModalBackground(){
+  if(!modalLocked || document.querySelector('.sheet.show')) return;
+  modalLocked=false;
+  viewer.classList.remove('modal-frozen');
+  document.body.classList.remove('modal-open');
+  document.body.style.top='';
+  document.documentElement.classList.remove('modal-open');
+  window.scrollTo(0,modalScrollY);
+}
+const scrimEl=document.getElementById('scrim');
+scrimEl.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
 function openSheet(id){
   activeId = id;
   const g = findGeom(id);
@@ -354,10 +445,11 @@ function openSheet(id){
     b.onclick=()=>{ st.steps[name] = stepState(id,name)==='done' ? false : true; b.classList.remove('na'); b.classList.toggle('on', st.steps[name]===true); };
     row.append(lab,b); c.appendChild(row);
   });
+  lockModalBackground();
   document.getElementById('scrim').classList.add('show');
   document.getElementById('sheet').classList.add('show');
 }
-function closeSheet(){ document.getElementById('sheet').classList.remove('show'); document.getElementById('scrim').classList.remove('show'); activeId = null; }
+function closeSheet(){ document.getElementById('sheet').classList.remove('show'); document.getElementById('scrim').classList.remove('show'); activeId = null; unlockModalBackground(); }
 function updateBulkSummary(){
   const changed = Object.values(bulkChoices).filter(v=>v && v!=='keep').length;
   const n = selected.size;
@@ -385,10 +477,11 @@ function openBulkSheet(){
   bulkChoices = Object.fromEntries(activeBulkSteps().map(n=>[n,'keep']));
   document.getElementById('bulkSheetSub').textContent = selected.size + ' ausgewählt · nur gewählte, für das Element passende Arbeitsschritte werden überschrieben';
   renderBulkSteps(); updateBulkSummary();
+  lockModalBackground();
   document.getElementById('scrim').classList.add('show');
   document.getElementById('bulkSheet').classList.add('show');
 }
-function closeBulkSheet(){ document.getElementById('bulkSheet').classList.remove('show'); document.getElementById('scrim').classList.remove('show'); }
+function closeBulkSheet(){ document.getElementById('bulkSheet').classList.remove('show'); document.getElementById('scrim').classList.remove('show'); unlockModalBackground(); }
 function applyBulkChanges(){
   const changes=Object.entries(bulkChoices).filter(([,v])=>v&&v!=='keep');
   if(!changes.length) return;
@@ -518,9 +611,9 @@ makeSheetDraggable('sheet', closeSheet); makeSheetDraggable('bulkSheet', closeBu
 document.getElementById('clearSel').onclick=clearSelection;
 document.getElementById('deselectBottom').onclick=clearSelection;
 document.getElementById('bulkOpen').onclick=openBulkSheet;
-document.getElementById('zoomIn').onclick=()=>{ scale=Math.min(2.2, scale+.2); applyScale(); };
-document.getElementById('zoomOut').onclick=()=>{ scale=Math.max(.55, scale-.2); applyScale(); };
-document.getElementById('fitBtn').onclick=()=>{ const w=viewer.clientWidth-2; scale=Math.max(.35, Math.min(1.45, w/(currentCfg().baseWidth || 1180))); applyScale(); viewer.scrollTo({left:0,top:0,behavior:'smooth'}); };
+document.getElementById('zoomIn').onclick=()=>{ scale=Math.min(3.5, scale+.2); applyScale(); };
+document.getElementById('zoomOut').onclick=()=>{ scale=Math.max(.2, scale-.2); applyScale(); };
+document.getElementById('fitBtn').onclick=()=>{ const w=viewer.clientWidth-2; scale=Math.max(.2, Math.min(1.45, w/(currentCfg().baseWidth || 1180))); applyScale(); viewer.scrollTo({left:0,top:0,behavior:'smooth'}); };
 const closeHouseMenu=setupNavMenu('houseBtn','houseMenu');
 const closeViewMenu=setupNavMenu('viewBtn','viewMenu');
 document.addEventListener('click',()=>{ closeHouseMenu(); closeViewMenu(); });
