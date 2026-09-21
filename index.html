@@ -4,9 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f4f5f7">
 <title>GymSüd – Haus C Rohbau</title>
+<script>
+/* iOS WebKit sticky-header rasterization workaround, applied before first paint. */
+if(/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1)) document.documentElement.classList.add('ios-webkit');
+</script>
 <style>
 :root {
   color-scheme: light dark;
@@ -21,8 +25,14 @@
 html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);overscroll-behavior:none}
 body{user-select:none;padding-bottom:env(safe-area-inset-bottom)}
 button,input,textarea{font:inherit}
-/* Opaque header: avoid iOS Safari text softening from backdrop blur on sticky elements. */
+/* Solid, non-composited header on iOS: iOS Safari can rasterize sticky small text softly. */
 .app-header{position:sticky;top:0;z-index:20;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;background:var(--sheet);-webkit-backdrop-filter:none;backdrop-filter:none;border-bottom:1px solid color-mix(in srgb,var(--soft) 65%, transparent)}
+@supports (-webkit-touch-callout:none){
+  .app-header{position:relative;top:auto;-webkit-transform:none;transform:none;filter:none;-webkit-filter:none;isolation:auto}
+  .eyebrow{font-size:13px;letter-spacing:0}
+}
+.ios-webkit .app-header{position:relative;top:auto;-webkit-transform:none;transform:none;-webkit-filter:none;filter:none;isolation:auto}
+.ios-webkit .eyebrow{font-size:13px;letter-spacing:0}
 .header-top{display:flex;align-items:center;justify-content:space-between;gap:14px}
 .project-block{min-width:0}.eyebrow{font-size:12px;color:var(--muted);font-weight:700;letter-spacing:.025em}
 .project-title{font-size:17px;font-weight:780;line-height:1.15;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -48,7 +58,12 @@ svg{display:block;width:100%;height:auto;background:var(--sheet)}
 .vhf-zone{fill:color-mix(in srgb,var(--soft) 7%, transparent);stroke:color-mix(in srgb,var(--soft) 28%, transparent);stroke-width:.6;vector-effect:non-scaling-stroke}
 .gok{stroke:#8a9097;stroke-width:.7;stroke-dasharray:4 3;vector-effect:non-scaling-stroke}
 .floor-label{font-size:8.5px;fill:var(--muted);font-weight:650;text-anchor:end}
-.opening{cursor:pointer;outline:none}
+/* Prevent native iOS selection/callouts on SVG during long-press; form inputs remain editable. */
+.viewer,.viewer svg,.viewer svg *, .opening, .opening *{
+  -webkit-user-select:none!important;user-select:none!important;
+  -webkit-touch-callout:none!important;
+}
+.opening{cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent}
 .window-band .band-border{fill:none;stroke:var(--soft);stroke-width:.75;vector-effect:non-scaling-stroke;pointer-events:none}
 .window-band .band-tag{fill:var(--muted);font-size:5.1px;font-weight:750;pointer-events:none}
 .window-part.is-panel rect.field{stroke:color-mix(in srgb,var(--line) 60%, transparent);stroke-width:.45;vector-effect:non-scaling-stroke}
@@ -82,13 +97,16 @@ svg{display:block;width:100%;height:auto;background:var(--sheet)}
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.36);z-index:40;display:none}.scrim.show{display:block}
 .sheet{position:fixed;z-index:41;left:0;right:0;bottom:0;transform:translateY(105%);transition:transform .22s ease;background:var(--sheet);border-radius:22px 22px 0 0;box-shadow:0 -10px 50px rgba(0,0,0,.25);max-height:86vh;overflow:auto;visibility:hidden;padding:8px 16px calc(18px + env(safe-area-inset-bottom))}
 .sheet.show{transform:translateY(0);visibility:visible}
-.grabber-wrap{display:flex;justify-content:center;padding:0 0 8px}.grabber{width:42px;height:5px;border-radius:999px;background:var(--soft);touch-action:none}.grabber.dragging{opacity:.8}
+/* Large swipe target around the visible 42×5 px grip for finger use. */
+.grabber-wrap{display:flex;justify-content:center;align-items:flex-start;min-height:38px;padding:11px 0 17px;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;cursor:grab}
+.grabber{width:42px;height:5px;border-radius:999px;background:var(--soft);pointer-events:none}
+.grabber-wrap:active{cursor:grabbing}.grabber.dragging{opacity:.8}
 .sheet h2{font-size:20px;margin:0 0 2px}.sheet-sub{font-size:13px;color:var(--muted);margin-bottom:14px}
 .step{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 0;border-top:1px solid color-mix(in srgb,var(--soft) 55%, transparent)}.step label{font-weight:650}
 .toggle{width:52px;height:32px;border-radius:999px;border:0;background:var(--soft);position:relative;flex:0 0 auto}.toggle::after{content:"";position:absolute;width:26px;height:26px;border-radius:50%;background:white;top:3px;left:3px;box-shadow:0 1px 4px rgba(0,0,0,.24);transition:.16s}.toggle.on{background:var(--ok)}.toggle.on::after{left:23px}.toggle.na{background:#9b8fd6}
 .detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}.detail-card{padding:10px;border:1px solid var(--soft);border-radius:12px}.detail-card small{display:block;color:var(--muted);margin-bottom:3px}.detail-card b{font-size:14px}
 .note-wrap{display:block;padding:12px 0 0}.note-wrap label{display:block;font-weight:650;margin-bottom:12px}
-textarea{width:100%;min-height:88px;resize:vertical;border:1px solid var(--soft);border-radius:12px;padding:10px;background:var(--bg);color:var(--text);user-select:text}
+textarea{width:100%;min-height:88px;resize:vertical;border:1px solid var(--soft);border-radius:12px;padding:10px;background:var(--bg);color:var(--text);-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
 .sheet-actions{display:flex;gap:8px;margin-top:12px}.sheet-actions button{flex:1;min-height:46px;border-radius:12px;border:0;font-weight:750}.save{background:var(--accent);color:white}.close{background:var(--bg);color:var(--text);border:1px solid var(--soft)!important}
 .legend{font-size:12px;color:var(--muted);padding:0 14px 14px;line-height:1.45}
 @media (max-width:390px){.facade-select-wrap.house .facade-select{width:92px}.facade-select-wrap.view .facade-select{width:102px}.facade-select{font-size:17px}}
@@ -224,11 +242,25 @@ function renderStatic(){
     passiveLayer.appendChild(g);
   });
 }
+function clearAccidentalSelection(){
+  // Do not alter a user's text selection/caret inside the editable note.
+  if(document.activeElement?.matches('textarea,input,[contenteditable="true"]')) return;
+  const selection=window.getSelection?.();
+  if(selection && selection.rangeCount) selection.removeAllRanges();
+}
+// The facade is an interactive drawing, not selectable document text.
+const facadeViewer=document.getElementById('viewer');
+facadeViewer.addEventListener('contextmenu', e=>{ e.preventDefault(); clearAccidentalSelection(); });
+facadeViewer.addEventListener('selectstart', e=>e.preventDefault());
+document.addEventListener('selectionchange',()=>{
+  const anchor=window.getSelection?.()?.anchorNode;
+  if(anchor && facadeViewer.contains(anchor)) clearAccidentalSelection();
+});
 function installGestures(el,id){
   let timer=null, sx=0, sy=0, moved=false, longFired=false;
-  const down = e=>{ if(e.button!==undefined && e.button!==0) return; const p = e.touches ? e.touches[0] : e; sx=p.clientX; sy=p.clientY; moved=false; longFired=false; timer=setTimeout(()=>{ if(!moved){ longFired=true; openSheet(id); } }, 400); };
+  const down = e=>{ if(e.button!==undefined && e.button!==0) return; const p = e.touches ? e.touches[0] : e; sx=p.clientX; sy=p.clientY; moved=false; longFired=false; timer=setTimeout(()=>{ if(!moved){ longFired=true; clearAccidentalSelection(); openSheet(id); clearAccidentalSelection(); } }, 400); };
   const move = e=>{ const p = e.touches ? e.touches[0] : e; if(Math.hypot(p.clientX-sx, p.clientY-sy) > 10){ moved=true; clearTimeout(timer); } };
-  const up = ()=>{ clearTimeout(timer); if(!moved && !longFired) toggleSelect(id); };
+  const up = ()=>{ clearTimeout(timer); if(longFired){ clearAccidentalSelection(); return; } if(!moved) toggleSelect(id); };
   el.addEventListener('pointerdown', down);
   el.addEventListener('pointermove', move);
   el.addEventListener('pointerup', up);
@@ -364,13 +396,110 @@ function applyBulkChanges(){
   saveActiveStorage();renderOpenings();renderWindowBands();closeBulkSheet();
 }
 function makeSheetDraggable(sheetId, closeFn){
-  const sheet=document.getElementById(sheetId); const grabber=sheet.querySelector('.grabber');
-  let startY=0, currentY=0, dragging=false, pointerId=null;
-  function resetDrag(animated){ if(animated===undefined) animated=true; if(animated) sheet.style.transition='transform .22s ease'; else sheet.style.transition='none'; sheet.style.transform=''; grabber.classList.remove('dragging'); dragging=false; pointerId=null; currentY=0; requestAnimationFrame(()=>{ if(animated) sheet.style.transition=''; }); }
-  grabber.addEventListener('pointerdown', e=>{ if(!sheet.classList.contains('show')) return; dragging=true; pointerId=e.pointerId; startY=e.clientY; currentY=0; sheet.style.transition='none'; grabber.classList.add('dragging'); if(grabber.setPointerCapture) grabber.setPointerCapture(pointerId); e.preventDefault(); });
-  grabber.addEventListener('pointermove', e=>{ if(!dragging || e.pointerId!==pointerId) return; currentY=Math.max(0,e.clientY-startY); sheet.style.transform='translateY(' + currentY + 'px)'; document.getElementById('scrim').style.opacity=Math.max(.12,1-currentY/260); e.preventDefault(); });
-  const finish = e=>{ if(!dragging || (e.pointerId!==undefined && e.pointerId!==pointerId)) return; try{ if(grabber.releasePointerCapture) grabber.releasePointerCapture(pointerId); }catch(_e){} const threshold=Math.min(120,Math.max(72,sheet.getBoundingClientRect().height*.16)); document.getElementById('scrim').style.opacity=''; if(currentY>=threshold){ sheet.style.transition='transform .18s ease'; sheet.style.transform='translateY(110%)'; grabber.classList.remove('dragging'); dragging=false; setTimeout(()=>{ sheet.style.transform=''; sheet.style.transition=''; closeFn(); },170); } else { resetDrag(true); } };
-  grabber.addEventListener('pointerup', finish); grabber.addEventListener('pointercancel', finish);
+  const sheet=document.getElementById(sheetId);
+  const handle=sheet.querySelector('.grabber-wrap');
+  const grip=sheet.querySelector('.grabber');
+  const scrim=document.getElementById('scrim');
+  let dragging=false, startY=0, lastY=0, currentY=0, startTime=0;
+  let pointerId=null, touchId=null, closing=false, closeTimer=null;
+
+  function resetStyles(){
+    if(closeTimer!==null){clearTimeout(closeTimer);closeTimer=null;}
+    sheet.style.transform='';
+    sheet.style.transition='';
+    scrim.style.opacity='';
+    grip.classList.remove('dragging');
+    dragging=false;closing=false;pointerId=null;touchId=null;currentY=0;
+  }
+  function begin(y){
+    if(!sheet.classList.contains('show') || dragging || closing) return false;
+    resetStyles();
+    dragging=true;startY=y;lastY=y;startTime=performance.now();
+    sheet.style.transition='none';grip.classList.add('dragging');
+    clearAccidentalSelection();
+    return true;
+  }
+  function move(y){
+    if(!dragging) return;
+    lastY=y;currentY=Math.max(0,y-startY);
+    sheet.style.transform=`translate3d(0,${currentY}px,0)`;
+    scrim.style.opacity=String(Math.max(.12,1-currentY/280));
+  }
+  function finish(cancelled=false){
+    if(!dragging) return;
+    const dy=currentY;
+    const elapsed=Math.max(1,performance.now()-startTime);
+    const threshold=Math.min(110,Math.max(65,sheet.getBoundingClientRect().height*.16));
+    dragging=false;pointerId=null;touchId=null;grip.classList.remove('dragging');
+    scrim.style.opacity='';
+    // Fast downward flicks also close, but a small accidental move never does.
+    if(!cancelled && (dy>=threshold || (dy>=38 && dy/elapsed>=.65))){
+      closing=true;
+      sheet.style.transition='transform .2s ease-out';
+      sheet.style.transform='translate3d(0,110%,0)';
+      closeTimer=setTimeout(()=>{
+        closeFn(); // Hide the sheet BEFORE removing the inline transform: no flash.
+        resetStyles();
+      },210);
+    }else{
+      sheet.style.transition='transform .2s ease-out';
+      sheet.style.transform='translate3d(0,0,0)';
+      setTimeout(()=>{
+        if(!dragging && !closing){sheet.style.transform='';sheet.style.transition='';}
+      },210);
+    }
+  }
+  function gestureTouch(e){
+    if(touchId===null) return null;
+    return Array.from(e.changedTouches).find(t=>t.identifier===touchId) || null;
+  }
+  // Safari on iPhone: real TouchEvents, non-passive so moving the grip cannot
+  // scroll the sheet/document or become a native text-selection gesture.
+  handle.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1) return;
+    const touch=e.changedTouches[0];
+    if(begin(touch.clientY)){
+      touchId=touch.identifier;
+      e.preventDefault();
+    }
+  },{passive:false});
+  handle.addEventListener('touchmove',e=>{
+    const touch=gestureTouch(e);
+    if(!touch) return;
+    move(touch.clientY);e.preventDefault();
+  },{passive:false});
+  handle.addEventListener('touchend',e=>{
+    if(!gestureTouch(e)) return;
+    e.preventDefault();finish(false);
+  },{passive:false});
+  handle.addEventListener('touchcancel',e=>{
+    if(!gestureTouch(e)) return;
+    e.preventDefault();finish(true);
+  },{passive:false});
+  // Desktop and pen; touch uses the path above to avoid double-fired events.
+  handle.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='touch' || (e.button!==undefined && e.button!==0)) return;
+    if(begin(e.clientY)){
+      pointerId=e.pointerId;
+      handle.setPointerCapture?.(e.pointerId);
+      e.preventDefault();
+    }
+  });
+  handle.addEventListener('pointermove',e=>{
+    if(pointerId!==e.pointerId || !dragging) return;
+    move(e.clientY);e.preventDefault();
+  });
+  function finishPointer(e,cancelled){
+    if(pointerId!==e.pointerId || !dragging) return;
+    try{handle.releasePointerCapture?.(e.pointerId);}catch(_){}
+    finish(cancelled);e.preventDefault();
+  }
+  handle.addEventListener('pointerup',e=>finishPointer(e,false));
+  handle.addEventListener('pointercancel',e=>finishPointer(e,true));
+  // Also remove transforms after closing through buttons, scrim, or view switch.
+  sheet.addEventListener('transitionend',e=>{
+    if(e.target===sheet && !sheet.classList.contains('show') && !dragging) resetStyles();
+  });
 }
 function applyScale(){ stage.style.width = ((currentCfg().baseWidth || 1180) * scale) + 'px'; }
 function switchView(viewKey){if(!views[viewKey]||viewKey===currentView)return;currentView=viewKey;selected.clear();closeSheet();closeBulkSheet();render();applyScale();viewer.scrollTo({left:0,top:0,behavior:'smooth'});}
