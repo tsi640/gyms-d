@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1d1f22">
-<meta name="gym-sued-version" content="0.5.2">
+<meta name="gym-sued-version" content="0.5.3">
 <title>GymSüd – Haus C · iOS Zoom</title>
 <script>
 /* iOS WebKit sticky-header rasterization workaround, applied before first paint. */
@@ -171,9 +171,24 @@ body.window-mode h3.legend-window{display:block!important}
 .report-kpi{border:1px solid var(--soft);border-radius:11px;padding:10px;background:var(--bg)}
 .report-kpi b{display:block;font-size:20px;line-height:1.1}.report-kpi span{display:block;color:var(--muted);font-size:11px;margin-top:3px}
 .report-section-title{font-size:13px;font-weight:800;margin:2px 0 8px;color:var(--text)}
-.report-facade-wrap{border:1px solid var(--soft);border-radius:12px;background:#111822;padding:8px;overflow:hidden}
+.report-facade-wrap{border:1px solid #c8ced6;border-radius:12px;background:#fff;padding:8px;overflow:hidden}
 .report-facade-caption{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.4}
-.report-facade svg{display:block;width:100%;height:auto;background:#111822;border-radius:8px}
+.report-facade svg{display:block;width:100%;height:auto;background:#fff;border-radius:8px}
+/* Document-style facade: white sheet, dark technical lines, green progress only. */
+.report-facade-svg .facade-outline{fill:none!important;stroke:#20262d!important;stroke-width:1.05!important}
+.report-facade-svg .facade-outline.secondary{fill:none!important;stroke:#747c85!important;stroke-width:.85!important}
+.report-facade-svg .vhf-zone,.report-facade-svg .not-yet-geometry{fill:none!important;stroke:#aeb5bd!important}
+.report-facade-svg .gok{stroke:#7a828b!important}
+.report-facade-svg .floor-label,.report-facade-svg .note{fill:#3c434a!important}
+.report-facade-svg .opening rect.field{fill:#fff!important;stroke:#30363d!important;stroke-width:.85!important}
+.report-facade-svg .opening[data-complete="1"] rect.field{fill:#edf8f1!important}
+.report-facade-svg .opening text{fill:#111!important;stroke:none!important}
+.report-facade-svg .opening .progress{fill:#2f9e5b!important}
+.report-facade-svg .passive rect{fill:#f7f8fa!important;stroke:#9aa2aa!important}
+.report-facade-svg .passive text{fill:#555d66!important}
+.report-facade-svg .window-band .band-border{stroke:#59616a!important}
+.report-facade-svg .window-band .band-tag{fill:#3c434a!important}
+.report-facade-svg .window-part .type-code{fill:#30363d!important;stroke:#fff!important}
 .report-summary-layout{display:grid;grid-template-columns:1fr;gap:12px;align-items:start}
 .report-summary-block{min-width:0}
 .report-progress-grid{display:grid;grid-template-columns:1fr;gap:8px}
@@ -233,7 +248,8 @@ body.window-mode h3.legend-window{display:block!important}
   #reportPrintRoot .report-page:first-child .report-bar{height:2.2mm!important;margin-top:1mm!important}
   #reportPrintRoot .report-page:first-child .report-progress-value{font-size:8.5pt!important}
   #reportPrintRoot .report-page:first-child .report-section-title{margin:0 0 2mm!important;font-size:9pt!important}
-  #reportPrintRoot .report-facade-wrap,#reportPrintRoot .report-facade svg{background:#111822!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #reportPrintRoot .report-facade-wrap,#reportPrintRoot .report-facade svg{background:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #reportPrintRoot .report-facade-wrap{border-color:#b8c0c8!important}
   #reportPrintRoot svg,#reportPrintRoot svg *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   #reportPrintRoot tr{break-inside:avoid}
   #reportPrintRoot .report-section-title{break-after:avoid}
@@ -258,7 +274,7 @@ body.window-mode h3.legend-window{display:block!important}
 <body>
 <header class="app-header">
   <div class="header-top">
-    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.5.2</span></div><div class="project-title" id="modeTitle">Fenster-Rohbauöffnungen</div></div>
+    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.5.3</span></div><div class="project-title" id="modeTitle">Fenster-Rohbauöffnungen</div></div>
     <button class="pill" id="fitBtn" type="button">Einpassen</button>
   </div>
   <div class="facade-nav">
@@ -1174,6 +1190,7 @@ function reportFacadeMarkup(){
   clone.setAttribute('aria-label','Fassadenansicht mit Fortschrittsbalken');
   clone.setAttribute('preserveAspectRatio','xMidYMid meet');
   clone.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
+  clone.querySelectorAll('.selected').forEach(el=>el.classList.remove('selected'));
   return clone.outerHTML;
 }
 function renderReportDocument(model){
