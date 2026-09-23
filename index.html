@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1d1f22">
-<meta name="gym-sued-version" content="0.4.2">
+<meta name="gym-sued-version" content="0.5.0">
 <title>GymSüd – Haus C · iOS Zoom</title>
 <script>
 /* iOS WebKit sticky-header rasterization workaround, applied before first paint. */
@@ -154,6 +154,53 @@ body.window-mode .legend-grid.legend-window{display:grid!important}
 body.window-mode h3.legend-window{display:block!important}
 .legend p{font-size:11px;color:var(--muted);margin:14px 0 0}
 @media(min-width:700px){.legend-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* QS report preview and print/PDF output. */
+#reportSheet{max-height:96vh;max-height:min(96dvh,calc(100dvh - env(safe-area-inset-top) - 4px))}
+.report-controls{display:flex;gap:8px;align-items:end;flex-wrap:wrap;margin:10px 0 14px}
+.report-control{display:flex;flex-direction:column;gap:5px;min-width:150px;flex:1}
+.report-control span{font-size:11px;color:var(--muted);font-weight:700}
+.report-control select{width:100%;min-height:42px;border:1px solid var(--soft);border-radius:11px;background:var(--bg);color:var(--text);padding:8px 10px;font-weight:700}
+.report-document{border:1px solid var(--soft);border-radius:14px;background:var(--sheet);padding:14px;margin-bottom:10px;user-select:text;-webkit-user-select:text}
+.report-document h3{font-size:16px;margin:0 0 4px}.report-meta{font-size:11px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+.report-kpis{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:0 0 16px}
+.report-kpi{border:1px solid var(--soft);border-radius:11px;padding:10px;background:var(--bg)}
+.report-kpi b{display:block;font-size:20px;line-height:1.1}.report-kpi span{display:block;color:var(--muted);font-size:11px;margin-top:3px}
+.report-section-title{font-size:13px;font-weight:800;margin:18px 0 8px;color:var(--text)}
+.report-progress-row{display:grid;grid-template-columns:minmax(120px,1fr) 56px;gap:9px;align-items:center;margin:8px 0}
+.report-progress-label{font-size:12px;line-height:1.3}.report-progress-label small{display:block;color:var(--muted);margin-top:2px}
+.report-bar{height:9px;background:color-mix(in srgb,var(--soft) 45%, transparent);border-radius:999px;overflow:hidden;margin-top:5px}.report-bar>i{display:block;height:100%;background:var(--ok);border-radius:inherit}
+.report-progress-value{text-align:right;font-size:12px;font-weight:750;font-variant-numeric:tabular-nums}
+.report-table-wrap{overflow:auto;border:1px solid var(--soft);border-radius:10px;-webkit-overflow-scrolling:touch}
+.report-table{width:100%;border-collapse:collapse;font-size:10px;min-width:700px;background:var(--sheet)}
+.report-table th,.report-table td{padding:6px 7px;border-bottom:1px solid color-mix(in srgb,var(--soft) 65%, transparent);border-right:1px solid color-mix(in srgb,var(--soft) 45%, transparent);vertical-align:top;text-align:left}
+.report-table th{position:sticky;top:0;background:var(--bg);font-size:9px;line-height:1.2;z-index:1}.report-table tr:last-child td{border-bottom:0}.report-table th:last-child,.report-table td:last-child{border-right:0}
+.report-table .status-cell{text-align:center;font-weight:850;white-space:nowrap}.report-done{color:var(--ok)}.report-na{color:#8172c6}.report-todo{color:var(--muted)}
+.report-note{max-width:260px;white-space:pre-wrap;overflow-wrap:anywhere}.report-empty{color:var(--muted);font-size:12px;padding:9px 0}.report-legend-line{font-size:10px;color:var(--muted);margin:7px 0 0;line-height:1.45}
+.report-view-chip{display:inline-block;border:1px solid var(--soft);border-radius:999px;padding:2px 6px;font-size:9px;font-weight:750;white-space:nowrap}
+#reportPrintRoot{display:none}
+@media(min-width:700px){.report-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}}
+@media print{
+  @page{size:A4 landscape;margin:9mm}
+  html,body{background:#fff!important;color:#111!important;height:auto!important;min-height:0!important}
+  body.printing-report{position:static!important;overflow:visible!important;padding:0!important}
+  body.printing-report>*{display:none!important}
+  body.printing-report>#reportPrintRoot{display:block!important;position:static!important;background:#fff!important;color:#111!important;font-family:Arial,sans-serif;user-select:text!important}
+  #reportPrintRoot .report-document{display:block!important;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;background:#fff!important;color:#111!important}
+  #reportPrintRoot .report-kpis{grid-template-columns:repeat(5,1fr)!important;gap:5mm!important}
+  #reportPrintRoot .report-kpi{background:#fff!important;border:1px solid #aaa!important;padding:3mm!important}
+  #reportPrintRoot .report-bar{background:#ddd!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #reportPrintRoot .report-bar>i{background:#777!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #reportPrintRoot .report-table-wrap{overflow:visible!important;border:1px solid #999!important;border-radius:0!important}
+  #reportPrintRoot .report-table{min-width:0!important;font-size:8pt!important;background:#fff!important;color:#111!important}
+  #reportPrintRoot .report-table th{position:static!important;background:#eee!important;color:#111!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #reportPrintRoot .report-table th,#reportPrintRoot .report-table td{padding:2.2mm 1.8mm!important;border-color:#bbb!important}
+  #reportPrintRoot .report-done,#reportPrintRoot .report-na,#reportPrintRoot .report-todo{color:#111!important}
+  #reportPrintRoot .report-note{max-width:70mm!important}
+  #reportPrintRoot tr{break-inside:avoid}
+  #reportPrintRoot .report-section-title{break-after:avoid}
+}
+
 /* Authentifizierung und sichtbarer Cloud-Speicherstatus */
 .sync-strip{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 14px;border-bottom:1px solid var(--soft);background:var(--sheet);font-size:12px;color:var(--muted)}
 .sync-strip strong{font-weight:700;color:var(--text)}
@@ -173,7 +220,7 @@ body.window-mode h3.legend-window{display:block!important}
 <body>
 <header class="app-header">
   <div class="header-top">
-    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.4.2</span></div><div class="project-title" id="modeTitle">Fenster-Rohbauöffnungen</div></div>
+    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.5.0</span></div><div class="project-title" id="modeTitle">Fenster-Rohbauöffnungen</div></div>
     <button class="pill" id="fitBtn" type="button">Einpassen</button>
   </div>
   <div class="facade-nav">
@@ -185,6 +232,7 @@ body.window-mode h3.legend-window{display:block!important}
     <button class="tool" id="zoomOut" type="button">−</button>
     <button class="tool" id="zoomIn" type="button">＋</button>
     <button class="tool" id="clearSel" type="button">Auswahl lösen</button>
+    <button class="tool" id="reportOpen" type="button">Bericht</button>
   </div>
 </header>
 <div class="sync-strip" id="syncStrip" role="status" aria-live="polite"><strong id="syncText">Supabase: Anmeldung erforderlich</strong><span id="syncUser"></span><button type="button" id="syncImport" hidden>Lokale Daten übernehmen</button><button type="button" id="syncRefresh" hidden>Neu laden</button><button type="button" id="syncLogout" hidden>Abmelden</button></div>
@@ -224,6 +272,17 @@ body.window-mode h3.legend-window{display:block!important}
 <input type="file" id="photoFileInput" accept="image/*" capture="environment" hidden aria-label="Foto aufnehmen">
 <section class="sheet" id="sheet" aria-modal="true" role="dialog"><div class="grabber-wrap"><div class="grabber"></div></div><h2 id="sheetTitle">Element</h2><div class="sheet-sub" id="sheetSub"></div><div class="detail-grid"><div class="detail-card"><small>Rohbauöffnung</small><b id="dimVal"></b></div><div class="detail-card"><small>Ebene</small><b id="levelVal"></b></div></div><div class="photo-entry"><button class="photo-entry-button" id="takePhoto" type="button">📷 Foto für dieses Feld aufnehmen</button><span class="photo-entry-info">Feldnummer automatisch im Bild · nur lokal auf dem Gerät</span></div><section class="photo-history" id="photoHistory" aria-label="Fotoprotokoll dieses Elements"><h3 class="photo-history-title">Fotoprotokoll <span class="photo-history-count" id="photoHistoryCount">0 Fotos</span></h3><div id="photoHistoryEntries" aria-live="polite"></div><p class="photo-history-info">Datum/Uhrzeit und Zusatztext werden im SGS-Fotoprotokoll synchronisiert – nicht die Bilddateien. Ein Protokolleintrag bestätigt nicht das Speichern in „Fotos“.</p></section><div id="steps"></div><div class="note-wrap"><label for="note">Restarbeit / Mangel-Hinweis</label><textarea id="note" placeholder="Text eingeben …"></textarea></div><div class="sheet-actions"><button class="close" id="closeSheet" type="button">Schließen</button><button class="save" id="saveSheet" type="button">Speichern</button></div></section>
 <section class="sheet" id="bulkSheet" aria-modal="true" role="dialog"><div class="grabber-wrap"><div class="grabber"></div></div><h2>Status setzen</h2><div class="sheet-sub" id="bulkSheetSub"></div><div class="bulk-summary" id="bulkSummary"></div><div id="bulkSteps"></div><div class="sheet-actions"><button class="close" id="closeBulkSheet" type="button">Abbrechen</button><button class="save" id="applyBulk" type="button">Anwenden</button></div></section>
+<section class="sheet" id="reportSheet" aria-modal="true" role="dialog" aria-labelledby="reportTitle">
+  <div class="grabber-wrap"><div class="grabber"></div></div>
+  <h2 id="reportTitle">QS-Bericht</h2>
+  <div class="sheet-sub">Auswertung des aktuell in der App geladenen Arbeitsstands.</div>
+  <div class="report-controls">
+    <label class="report-control"><span>Bereich</span><select id="reportScope"><option value="view">Aktuelle Fassade</option><option value="house">Haus C gesamt</option></select></label>
+  </div>
+  <div id="reportPreview" aria-live="polite"></div>
+  <div class="sheet-actions"><button class="close" id="closeReport" type="button">Schließen</button><button class="save" id="printReport" type="button">Drucken / PDF</button></div>
+</section>
+<div id="reportPrintRoot" aria-hidden="true"></div>
 <section class="sheet" id="photoSheet" aria-modal="true" role="dialog" aria-labelledby="photoTitle">
   <div class="grabber-wrap"><div class="grabber"></div></div>
   <h2 id="photoTitle">Fotodokumentation</h2>
@@ -1000,13 +1059,108 @@ function makeSheetDraggable(sheetId, closeFn){
   });
 }
 function applyScale(){ stage.style.width = ((currentCfg().baseWidth || 1180) * scale) + 'px'; }
-function switchView(viewKey){if(!views[viewKey]||viewKey===currentView)return;currentView=viewKey;selected.clear();closeSheet();closeBulkSheet();render();applyScale();viewer.scrollTo({left:0,top:0,behavior:'smooth'});}
+function switchView(viewKey){if(!views[viewKey]||viewKey===currentView)return;currentView=viewKey;selected.clear();closeSheet();closeBulkSheet();if(document.getElementById('reportSheet')?.classList.contains('show'))closeReport();render();applyScale();viewer.scrollTo({left:0,top:0,behavior:'smooth'});}
 function setupNavMenu(buttonId, menuId){
   const button=document.getElementById(buttonId), menu=document.getElementById(menuId);
   function close(){ menu.classList.remove('show'); }
   button.addEventListener('click', e=>{ e.stopPropagation(); document.querySelectorAll('.nav-popover.show').forEach(x=>{ if(x!==menu) x.classList.remove('show'); }); const r=button.getBoundingClientRect(); menu.classList.toggle('show'); if(menu.classList.contains('show')){ const mw=menu.getBoundingClientRect().width||210; menu.style.left=Math.max(10, Math.min(r.left, window.innerWidth-mw-10)) + 'px'; menu.style.top=(r.bottom+8) + 'px'; } });
   return close;
 }
+
+
+/* Report: current loaded Supabase state, no separate report data is persisted. */
+function reportEscape(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+function reportStepsFor(mode,item){return mode==='fenster'?(item?.kind==='paneel'?panelStepNames:windowStepNames):stepNames;}
+function reportStoreFor(mode){return mode==='fenster'?windowStore:store;}
+function reportItems(scope,mode){
+  if(mode==='rohbau'){
+    const keys=scope==='house'?['west','east']:[currentView];
+    return keys.flatMap(view=>views[view].geometry.map(item=>({view,item})));
+  }
+  const parts=windowBands.flatMap(b=>b.parts.map(item=>({view:(b.view||((b.id||'').startsWith('C-O-')?'east':'west')),item})));
+  return scope==='house'?parts:parts.filter(x=>x.view===currentView);
+}
+function reportAbbr(name){
+  const map={'UK unten':'UK u.','UK oben':'UK o.','Blendblech':'BB','Kabelloch':'KL','Kabeldurchführung':'KD','Fensterrahmen':'FR','Baukörperanschluss (Dämmung etc.)':'BKA','Verglasung':'V','Sonnenschutz':'SS','Außenseitige Verblechung':'AV','Beschläge':'B','Reinigung':'R'};
+  return map[name]||name.replace(/\s+/g,' ').slice(0,8);
+}
+function reportEntry(mode,id){const e=reportStoreFor(mode)[id];return e&&typeof e==='object'?e:{steps:{},note:''};}
+function reportStepValue(mode,id,name){const raw=reportEntry(mode,id).steps?.[name];return raw===true?'done':raw==='na'?'na':'todo';}
+function reportPhotoCount(id){return Array.isArray(photoHistory[id])?photoHistory[id].length:0;}
+function buildReportModel(scope,mode){
+  const rows=reportItems(scope,mode);
+  const union=[];
+  rows.forEach(({item})=>reportStepsFor(mode,item).forEach(s=>{if(!union.includes(s))union.push(s);}));
+  let complete=0,started=0,notes=0,photos=0,doneTotal=0,applicableTotal=0;
+  const stepStats=new Map(union.map(s=>[s,{done:0,na:0,applicable:0,total:0}]));
+  const detail=rows.map(({view,item})=>{
+    const steps=reportStepsFor(mode,item), entry=reportEntry(mode,item.id);
+    let done=0,na=0;
+    const values={};
+    for(const name of steps){
+      const v=reportStepValue(mode,item.id,name);values[name]=v;
+      const stat=stepStats.get(name);stat.total++;
+      if(v==='na'){na++;stat.na++;}
+      else{stat.applicable++;applicableTotal++;if(v==='done'){done++;stat.done++;doneTotal++;}}
+    }
+    const applicable=steps.length-na;
+    const isComplete=applicable===0 ? steps.length>0 : done===applicable;
+    const note=typeof entry.note==='string'?entry.note.trim():'';
+    const photoCount=reportPhotoCount(item.id);
+    const isStarted=done>0||na>0||!!note||photoCount>0;
+    if(isComplete)complete++;if(isStarted)started++;if(note)notes++;photos+=photoCount;
+    return {view,item,steps,values,done,na,applicable,isComplete,isStarted,note,photoCount};
+  });
+  return {scope,mode,rows:detail,steps:union,total:detail.length,complete,started,inProgress:detail.filter(x=>x.isStarted&&!x.isComplete).length,untouched:detail.filter(x=>!x.isStarted).length,notes,photos,doneTotal,applicableTotal,stepStats};
+}
+function renderReportDocument(model){
+  const now=new Date();
+  const modeLabel=model.mode==='rohbau'?'Rohbau':'Fenster';
+  const scopeLabel=model.scope==='house'?'Haus C · West + Ost':'Haus C · '+(currentView==='west'?'West':'Ost');
+  const overall=model.applicableTotal?Math.round(model.doneTotal/model.applicableTotal*100):0;
+  const user=cloudUser?.email?reportEscape(cloudUser.email):'–';
+  const kpis=[['Felder',model.total],['Vollständig',model.complete],['In Arbeit',model.inProgress],['Ohne Eintrag',model.untouched],['Gesamt',overall+' %']];
+  const progress=model.steps.map(name=>{
+    const st=model.stepStats.get(name);const pct=st.applicable?Math.round(st.done/st.applicable*100):100;
+    return `<div class="report-progress-row"><div class="report-progress-label">${reportEscape(name)}<small>${st.done} fertig · ${st.na} nicht zutreffend · ${st.applicable} anwendbar</small><div class="report-bar"><i style="width:${pct}%"></i></div></div><div class="report-progress-value">${pct} %</div></div>`;
+  }).join('');
+  const headSteps=model.steps.map(name=>`<th title="${reportEscape(name)}">${reportEscape(reportAbbr(name))}</th>`).join('');
+  const body=model.rows.map(r=>{
+    const states=model.steps.map(name=>{
+      if(!r.steps.includes(name))return '<td class="status-cell report-na">·</td>';
+      const v=r.values[name];return v==='done'?'<td class="status-cell report-done">✓</td>':v==='na'?'<td class="status-cell report-na">n/z</td>':'<td class="status-cell report-todo">–</td>';
+    }).join('');
+    const viewChip=model.scope==='house'?`<span class="report-view-chip">${r.view==='west'?'West':'Ost'}</span> `:'';
+    const note=r.note?reportEscape(r.note):'';
+    return `<tr><td>${viewChip}<b>${reportEscape(r.item.id)}</b></td><td>${reportEscape(r.item.level||'–')}</td>${states}<td class="report-note">${note}${r.photoCount?`${note?'<br>':''}<small>${r.photoCount} Foto${r.photoCount===1?'':'s'} protokolliert</small>`:''}</td></tr>`;
+  }).join('');
+  return `<article class="report-document"><h3>GymSüd · 1640 · QS-Bericht ${modeLabel}</h3><div class="report-meta">${scopeLabel}<br>Berichtsstand: ${reportEscape(now.toLocaleString('de-DE'))} · Benutzer: ${user}<br>Datenbasis: aktuell in der App geladener, synchronisierter Arbeitsstand.</div><div class="report-kpis">${kpis.map(([label,value])=>`<div class="report-kpi"><b>${reportEscape(value)}</b><span>${reportEscape(label)}</span></div>`).join('')}</div><div class="report-section-title">Fortschritt je Arbeitsschritt</div>${progress||'<div class="report-empty">Keine Arbeitsschritte definiert.</div>'}<div class="report-section-title">Feldübersicht</div><div class="report-table-wrap"><table class="report-table"><thead><tr><th>Feld</th><th>Ebene</th>${headSteps}<th>Restarbeit / Mangel · Fotos</th></tr></thead><tbody>${body||'<tr><td colspan="99">Keine Felder vorhanden.</td></tr>'}</tbody></table></div><div class="report-legend-line">Zeichen: ✓ = fertig · – = nicht fertig / ohne Fertigmeldung · n/z = nicht zutreffend · · = Arbeitsschritt für dieses Bauteil nicht vorgesehen. „Vollständig“ bedeutet: alle anwendbaren Schritte sind fertig.</div></article>`;
+}
+function refreshReport(){
+  const scope=document.getElementById('reportScope').value;
+  const model=buildReportModel(scope,currentMode);
+  const html=renderReportDocument(model);
+  document.getElementById('reportPreview').innerHTML=html;
+  document.getElementById('reportPrintRoot').innerHTML=html;
+}
+function openReport(){
+  closeSheet();closeBulkSheet();
+  refreshReport();
+  lockModalBackground();document.getElementById('scrim').classList.add('show');document.getElementById('reportSheet').classList.add('show');
+}
+function closeReport(){
+  document.getElementById('reportSheet').classList.remove('show');document.getElementById('scrim').classList.remove('show');unlockModalBackground();
+}
+document.getElementById('reportOpen').onclick=openReport;
+document.getElementById('closeReport').onclick=closeReport;
+document.getElementById('reportScope').addEventListener('change',refreshReport);
+document.getElementById('printReport').onclick=()=>{
+  refreshReport();document.body.classList.add('printing-report');
+  const cleanup=()=>document.body.classList.remove('printing-report');
+  window.addEventListener('afterprint',cleanup,{once:true});
+  setTimeout(()=>{window.print();setTimeout(cleanup,1200);},30);
+};
+makeSheetDraggable('reportSheet',closeReport);
 
 /* Photo image stays in browser memory; only metadata is synchronized to Supabase. */
 /* Photo metadata keyed by element ID. No image bytes or image URLs leave this browser. */
@@ -1216,7 +1370,7 @@ document.getElementById('saveSheet').onclick=async()=>{
 document.getElementById('closeSheet').onclick=closeSheet;
 document.getElementById('closeBulkSheet').onclick=closeBulkSheet;
 document.getElementById('applyBulk').onclick=applyBulkChanges;
-document.getElementById('scrim').onclick=()=>{if(document.getElementById('photoSheet').classList.contains('show')){closePhotoSheet();return;}closeSheet();closeBulkSheet();};
+document.getElementById('scrim').onclick=()=>{if(document.getElementById('photoSheet').classList.contains('show')){closePhotoSheet();return;}if(document.getElementById('reportSheet').classList.contains('show')){closeReport();return;}closeSheet();closeBulkSheet();};
 makeSheetDraggable('sheet', closeSheet); makeSheetDraggable('bulkSheet', closeBulkSheet);
 document.getElementById('clearSel').onclick=clearSelection;
 document.getElementById('deselectBottom').onclick=clearSelection;
@@ -1228,7 +1382,7 @@ const closeHouseMenu=setupNavMenu('houseBtn','houseMenu');
 const closeViewMenu=setupNavMenu('viewBtn','viewMenu');
 document.addEventListener('click',()=>{ closeHouseMenu(); closeViewMenu(); });
 document.querySelectorAll('#viewMenu .nav-option[data-view]').forEach(btn=>btn.onclick=()=>switchView(btn.dataset.view));
-function switchMode(mode){if(currentMode===mode)return;currentMode=mode;selected.clear();closeSheet();closeBulkSheet();render();}
+function switchMode(mode){if(currentMode===mode)return;currentMode=mode;selected.clear();closeSheet();closeBulkSheet();if(document.getElementById('reportSheet')?.classList.contains('show'))closeReport();render();}
 document.getElementById('roughMode').onclick=()=>switchMode('rohbau');
 document.getElementById('windowMode').onclick=()=>switchMode('fenster');
 window.addEventListener('resize',()=>{});
