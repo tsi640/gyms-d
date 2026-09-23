@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1d1f22">
-<meta name="gym-sued-version" content="0.5.0">
+<meta name="gym-sued-version" content="0.5.2">
 <title>GymSüd – Haus C · iOS Zoom</title>
 <script>
 /* iOS WebKit sticky-header rasterization workaround, applied before first paint. */
@@ -174,6 +174,8 @@ body.window-mode h3.legend-window{display:block!important}
 .report-facade-wrap{border:1px solid var(--soft);border-radius:12px;background:#111822;padding:8px;overflow:hidden}
 .report-facade-caption{font-size:10px;color:var(--muted);margin-top:6px;line-height:1.4}
 .report-facade svg{display:block;width:100%;height:auto;background:#111822;border-radius:8px}
+.report-summary-layout{display:grid;grid-template-columns:1fr;gap:12px;align-items:start}
+.report-summary-block{min-width:0}
 .report-progress-grid{display:grid;grid-template-columns:1fr;gap:8px}
 .report-progress-row{display:grid;grid-template-columns:minmax(120px,1fr) 56px;gap:9px;align-items:center;margin:0}
 .report-progress-label{font-size:12px;line-height:1.3}.report-progress-label small{display:block;color:var(--muted);margin-top:2px}
@@ -192,7 +194,7 @@ body.window-mode h3.legend-window{display:block!important}
 .report-view-chip{display:inline-block;border:1px solid var(--soft);border-radius:999px;padding:2px 6px;font-size:9px;font-weight:750;white-space:nowrap}
 .report-page-footer{margin-top:auto;padding-top:8px;border-top:1px solid color-mix(in srgb,var(--soft) 65%, transparent);font-size:10px;color:var(--muted);display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
 #reportPrintRoot{display:none}
-@media(min-width:700px){.report-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}.report-progress-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 16px}}
+@media(min-width:900px){.report-kpis{grid-template-columns:repeat(5,minmax(0,1fr))}.report-summary-layout{grid-template-columns:minmax(0,1.55fr) minmax(250px,.85fr);gap:16px}.report-progress-grid{grid-template-columns:1fr;gap:8px}}
 @media print{
   @page{size:A4 landscape;margin:10mm}
   html,body{background:#fff!important;color:#111!important;height:auto!important;min-height:0!important}
@@ -215,6 +217,22 @@ body.window-mode h3.legend-window{display:block!important}
   #reportPrintRoot .report-todo{color:#6b7280!important}
   #reportPrintRoot .report-note{max-width:58mm!important}
   #reportPrintRoot .report-page-header,#reportPrintRoot .report-page-footer{border-color:#c4cbd3!important}
+  #reportPrintRoot .report-page:first-child{height:185mm!important;min-height:185mm!important;max-height:185mm!important;overflow:hidden!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  #reportPrintRoot .report-page:first-child .report-page-header{padding-bottom:2.5mm!important;margin-bottom:2.5mm!important}
+  #reportPrintRoot .report-page:first-child .report-kpis{margin-bottom:3mm!important}
+  #reportPrintRoot .report-page:first-child .report-kpi{padding:2.2mm 2.6mm!important}
+  #reportPrintRoot .report-page:first-child .report-kpi b{font-size:15pt!important}
+  #reportPrintRoot .report-page:first-child .report-summary-layout{display:grid!important;grid-template-columns:minmax(0,1.58fr) minmax(0,.82fr)!important;gap:5mm!important;align-items:start!important;break-inside:avoid!important;page-break-inside:avoid!important}
+  #reportPrintRoot .report-page:first-child .report-facade-wrap{height:105mm!important;display:flex!important;align-items:center!important;justify-content:center!important;padding:2.5mm!important;box-sizing:border-box!important}
+  #reportPrintRoot .report-page:first-child .report-facade svg{display:block!important;width:auto!important;height:100%!important;max-width:100%!important;max-height:100%!important;margin:auto!important}
+  #reportPrintRoot .report-page:first-child .report-facade-caption{margin-top:1.5mm!important;font-size:7pt!important}
+  #reportPrintRoot .report-page:first-child .report-progress-grid{grid-template-columns:1fr!important;gap:1.6mm!important}
+  #reportPrintRoot .report-page:first-child .report-progress-row{grid-template-columns:minmax(0,1fr) 13mm!important;gap:2mm!important;margin:0!important}
+  #reportPrintRoot .report-page:first-child .report-progress-label{font-size:8pt!important;line-height:1.15!important}
+  #reportPrintRoot .report-page:first-child .report-progress-label small{font-size:6.5pt!important;margin-top:.7mm!important}
+  #reportPrintRoot .report-page:first-child .report-bar{height:2.2mm!important;margin-top:1mm!important}
+  #reportPrintRoot .report-page:first-child .report-progress-value{font-size:8.5pt!important}
+  #reportPrintRoot .report-page:first-child .report-section-title{margin:0 0 2mm!important;font-size:9pt!important}
   #reportPrintRoot .report-facade-wrap,#reportPrintRoot .report-facade svg{background:#111822!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   #reportPrintRoot svg,#reportPrintRoot svg *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   #reportPrintRoot tr{break-inside:avoid}
@@ -240,7 +258,7 @@ body.window-mode h3.legend-window{display:block!important}
 <body>
 <header class="app-header">
   <div class="header-top">
-    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.5.1</span></div><div class="project-title" id="modeTitle">Fenster-Rohbauöffnungen</div></div>
+    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.5.2</span></div><div class="project-title" id="modeTitle">Fenster-Rohbauöffnungen</div></div>
     <button class="pill" id="fitBtn" type="button">Einpassen</button>
   </div>
   <div class="facade-nav">
@@ -1154,6 +1172,7 @@ function reportFacadeMarkup(){
   clone.setAttribute('class','report-facade-svg');
   clone.setAttribute('role','img');
   clone.setAttribute('aria-label','Fassadenansicht mit Fortschrittsbalken');
+  clone.setAttribute('preserveAspectRatio','xMidYMid meet');
   clone.querySelectorAll('[id]').forEach(el=>el.removeAttribute('id'));
   return clone.outerHTML;
 }
@@ -1179,7 +1198,7 @@ function renderReportDocument(model){
   }).join('');
   const chrome=reportPageChrome(model,now);
   const facade=reportFacadeMarkup();
-  return `<article class="report-document"><section class="report-page">${chrome.header}<div class="report-kpis">${kpis.map(([label,value])=>`<div class="report-kpi"><b>${reportEscape(value)}</b><span>${reportEscape(label)}</span></div>`).join('')}</div><div><div class="report-section-title">Ansicht mit Fortschrittsbalken</div><div class="report-facade-wrap report-facade">${facade}</div><div class="report-facade-caption">Darstellung der aktuell geöffneten Ansicht mit Fortschrittsbalken. Berichtsumfang: ${reportEscape(scopeLabel)}.</div></div><div><div class="report-section-title">Fortschritt je Arbeitsschritt</div><div class="report-progress-grid">${progress||'<div class="report-empty">Keine Arbeitsschritte definiert.</div>'}</div></div>${chrome.footer}</section><section class="report-page">${chrome.header}<div class="report-section-title">Feldübersicht</div><div class="report-table-wrap"><table class="report-table"><thead><tr><th>Feld</th><th>Ebene</th>${headSteps}<th>Restarbeit / Mangel</th><th>Fotos</th></tr></thead><tbody>${body||'<tr><td colspan="99">Keine Felder vorhanden.</td></tr>'}</tbody></table></div><div class="report-legend-line">Zeichen: ✓ = fertig · – = nicht fertig / ohne Fertigmeldung · n/z = nicht zutreffend · · = Arbeitsschritt für dieses Bauteil nicht vorgesehen. „Vollständig“ bedeutet: alle anwendbaren Schritte sind fertig.</div>${chrome.footer}</section></article>`;
+  return `<article class="report-document"><section class="report-page">${chrome.header}<div class="report-kpis">${kpis.map(([label,value])=>`<div class="report-kpi"><b>${reportEscape(value)}</b><span>${reportEscape(label)}</span></div>`).join('')}</div><div class="report-summary-layout"><div class="report-summary-block"><div class="report-section-title">Ansicht mit Fortschrittsbalken</div><div class="report-facade-wrap report-facade">${facade}</div><div class="report-facade-caption">Darstellung der aktuell geöffneten Ansicht mit Fortschrittsbalken. Berichtsumfang: ${reportEscape(scopeLabel)}.</div></div><div class="report-summary-block"><div class="report-section-title">Fortschritt je Arbeitsschritt</div><div class="report-progress-grid">${progress||'<div class="report-empty">Keine Arbeitsschritte definiert.</div>'}</div></div></div>${chrome.footer}</section><section class="report-page">${chrome.header}<div class="report-section-title">Feldübersicht</div><div class="report-table-wrap"><table class="report-table"><thead><tr><th>Feld</th><th>Ebene</th>${headSteps}<th>Restarbeit / Mangel</th><th>Fotos</th></tr></thead><tbody>${body||'<tr><td colspan="99">Keine Felder vorhanden.</td></tr>'}</tbody></table></div><div class="report-legend-line">Zeichen: ✓ = fertig · – = nicht fertig / ohne Fertigmeldung · n/z = nicht zutreffend · · = Arbeitsschritt für dieses Bauteil nicht vorgesehen. „Vollständig“ bedeutet: alle anwendbaren Schritte sind fertig.</div>${chrome.footer}</section></article>`;
 }
 function refreshReport(){
   const scope=document.getElementById('reportScope').value;
