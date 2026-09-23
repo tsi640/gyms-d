@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1d1f22">
-<meta name="gym-sued-version" content="0.3.2">
+<meta name="gym-sued-version" content="0.4.2">
 <title>GymSüd – Haus C · iOS Zoom</title>
 <script>
 /* iOS WebKit sticky-header rasterization workaround, applied before first paint. */
@@ -81,7 +81,7 @@ svg{display:block;width:100%;height:auto;background:var(--sheet)}
 .opening text{fill:var(--text);pointer-events:none;text-anchor:middle;dominant-baseline:middle}
 .opening .num{font-size:5.6px;font-weight:780;letter-spacing:.02em}
 .opening.selected rect.field{stroke:var(--selected);stroke-width:2.1;fill:color-mix(in srgb,var(--accent) 8%, var(--sheet));}
-.opening[data-progress="5"] rect.field{fill:color-mix(in srgb,var(--ok) 14%, var(--sheet));}
+.opening[data-complete="1"] rect.field{fill:color-mix(in srgb,var(--ok) 14%, var(--sheet));}
 .opening .progress{fill:var(--ok)}
 .note{font-size:5px;fill:var(--muted)}
 .passive rect{fill:color-mix(in srgb,var(--passive) 22%, transparent);stroke:color-mix(in srgb,var(--soft) 65%, transparent);stroke-width:.75;stroke-dasharray:3 2;vector-effect:non-scaling-stroke}
@@ -173,7 +173,7 @@ body.window-mode h3.legend-window{display:block!important}
 <body>
 <header class="app-header">
   <div class="header-top">
-    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.4.1</span></div><div class="project-title" id="modeTitle">Fenster-Rohbauöffnungen</div></div>
+    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.4.2</span></div><div class="project-title" id="modeTitle">Fenster-Rohbauöffnungen</div></div>
     <button class="pill" id="fitBtn" type="button">Einpassen</button>
   </div>
   <div class="facade-nav">
@@ -733,7 +733,10 @@ function renderWindowBands(){
     b.parts.forEach(p=>{
       const el=makeSvg('g',{class:'opening window-part'+(p.kind==='paneel'?' is-panel':''),tabindex:'0'});
       el.dataset.id=p.id;
-      el.dataset.progress=progress(p.id);
+      const prog=progress(p.id), total=activeStepNamesFor(p).length;
+      el.dataset.progress=prog;
+      el.dataset.total=total;
+      el.dataset.complete=(total>0 && prog===total)?'1':'0';
       if(selected.has(p.id))el.classList.add('selected');
       const yy=mapY(p.y+p.dy);
       const partHeight=Math.abs(mapY(p.y+p.dy+p.h)-yy);
@@ -758,8 +761,8 @@ function renderWindowBands(){
         labelClip.appendChild(typeLabel);
         el.appendChild(labelClip);
       }
-      const count=activeStepNamesFor(p).length,n=progress(p.id);
-      if(n>0)el.appendChild(makeSvg('rect',{class:'progress',x:p.x,y:yy+partHeight-1.65,width:p.w*n/count,height:1.65}));
+      const count=total,n=prog;
+      if(n>0){ const barH=Math.min(3.1, Math.max(2.25, partHeight*0.12)); el.appendChild(makeSvg('rect',{class:'progress',x:p.x,y:yy+partHeight-barH,width:p.w*n/count,height:barH})); }
       installGestures(el,p.id);
       group.appendChild(el);
     });
@@ -771,7 +774,10 @@ function renderOpenings(){
   currentGeometry().forEach(g=>{
     const el = makeSvg('g',{class:'opening',tabindex:'0'});
     el.dataset.id = g.id;
-    el.dataset.progress = progress(g.id);
+    const p = progress(g.id);
+    el.dataset.progress = p;
+    el.dataset.total = stepNames.length;
+    el.dataset.complete = (stepNames.length>0 && p===stepNames.length) ? '1' : '0';
     if(selected.has(g.id)) el.classList.add('selected');
     const vr = visibleRect(g);
     el.appendChild(makeSvg('rect',{class:'field',x:vr.x,y:vr.y,width:vr.w,height:vr.h,rx:0.5}));
@@ -785,8 +791,7 @@ function renderOpenings(){
     if(vr.w > 120) fs = 8.5;
     txt.style.fontSize = fs + 'px';
     el.appendChild(txt);
-    const p = progress(g.id);
-    if(p > 0) el.appendChild(makeSvg('rect',{class:'progress',x:vr.x,y:vr.y+vr.h-1.6,width:vr.w*(p/stepNames.length),height:1.6}));
+    if(p > 0){ const barH=Math.min(3.2, Math.max(2.35, vr.h*0.11)); el.appendChild(makeSvg('rect',{class:'progress',x:vr.x,y:vr.y+vr.h-barH,width:vr.w*(p/stepNames.length),height:barH})); }
     installGestures(el,g.id);
     openings.appendChild(el);
   });
