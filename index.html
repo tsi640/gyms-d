@@ -272,6 +272,21 @@ body.window-mode h3.legend-window{display:block!important}
 .auth-card button{width:100%;border:0;background:var(--accent);color:#fff;border-radius:10px;padding:12px;margin-top:15px;font-weight:750}
 .auth-card button:disabled{opacity:.45}.auth-error{color:#f07d70!important;white-space:pre-wrap}
 .auth-secondary{font-size:12px;color:var(--muted)}
+
+/* Plan-Editor: nur SGS, nur Fassade. */
+#planEditToggle.active{border-color:var(--accent);color:var(--accent);background:color-mix(in srgb,var(--accent) 14%,var(--sheet))}
+body.plan-edit-mode .viewer{outline:2px solid color-mix(in srgb,var(--accent) 58%,transparent);outline-offset:-2px}
+body.plan-edit-mode .window-part{cursor:crosshair}
+.plan-edit-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+.plan-edit-grid label,.plan-split-grid label{display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:750;color:var(--muted)}
+.plan-edit-grid input,.plan-edit-grid select,.plan-edit-grid textarea,.plan-split-grid input,.plan-split-grid select{width:100%;box-sizing:border-box;border:1px solid var(--soft);border-radius:10px;background:var(--bg);color:var(--text);padding:9px 10px;font:inherit}
+.plan-edit-grid textarea{resize:vertical;min-height:74px}
+.plan-edit-wide{grid-column:1/-1}.plan-check{grid-column:1/-1;flex-direction:row!important;align-items:center;color:var(--text)!important}.plan-check input{width:auto!important}
+.plan-color-row{display:flex;gap:8px;align-items:center}.plan-color-row input[type=color]{width:52px;height:38px;padding:3px}.mini{min-height:38px;padding:7px 10px!important}
+.plan-split-box{border:1px solid var(--soft);border-radius:12px;padding:12px;margin:8px 0 4px;background:var(--bg)}
+.plan-split-box h3{margin:0 0 5px;font-size:13px}.plan-split-box p{margin:0 0 10px;font-size:11px;color:var(--muted);line-height:1.45}
+.plan-split-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.plan-split-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.plan-warning{color:#c78b28!important;font-weight:700}.plan-edit-child-note{font-size:11px;color:var(--accent);font-weight:750}
+@media(max-width:560px){.plan-edit-grid,.plan-split-grid{grid-template-columns:1fr}.plan-edit-wide{grid-column:auto}}
 </style>
 </head>
 <body>
@@ -289,7 +304,7 @@ body.window-mode h3.legend-window{display:block!important}
     <button class="tool" id="zoomOut" type="button">−</button>
     <button class="tool" id="zoomIn" type="button">＋</button>
     <button class="tool" id="clearSel" type="button">Auswahl lösen</button>
-    <button class="tool" id="reportOpen" type="button">Bericht</button>
+    <button class="tool" id="reportOpen" type="button">Bericht</button><button class="tool" id="planEditToggle" type="button" hidden>Plan bearbeiten</button>
   </div>
 </header>
 <div class="sync-strip" id="syncStrip" role="status" aria-live="polite"><strong id="syncText">Supabase: Anmeldung erforderlich</strong><span id="syncUser"></span><button type="button" id="syncImport" hidden>Lokale Daten übernehmen</button><button type="button" id="syncRefresh" hidden>Neu laden</button><button type="button" id="syncLogout" hidden>Abmelden</button></div>
@@ -329,6 +344,32 @@ body.window-mode h3.legend-window{display:block!important}
 <input type="file" id="photoFileInput" accept="image/*" capture="environment" hidden aria-label="Foto aufnehmen">
 <section class="sheet" id="sheet" aria-modal="true" role="dialog"><div class="grabber-wrap"><div class="grabber"></div></div><h2 id="sheetTitle">Element</h2><div class="sheet-sub" id="sheetSub"></div><div class="detail-grid"><div class="detail-card"><small>Rohbauöffnung</small><b id="dimVal"></b></div><div class="detail-card"><small>Ebene</small><b id="levelVal"></b></div></div><div class="photo-entry"><button class="photo-entry-button" id="takePhoto" type="button">📷 Foto für dieses Feld aufnehmen</button><span class="photo-entry-info">Feldnummer automatisch im Bild · nur lokal auf dem Gerät</span></div><section class="photo-history" id="photoHistory" aria-label="Fotoprotokoll dieses Elements"><h3 class="photo-history-title">Fotoprotokoll <span class="photo-history-count" id="photoHistoryCount">0 Fotos</span></h3><div id="photoHistoryEntries" aria-live="polite"></div><p class="photo-history-info">Datum/Uhrzeit und Zusatztext werden im SGS-Fotoprotokoll synchronisiert – nicht die Bilddateien. Ein Protokolleintrag bestätigt nicht das Speichern in „Fotos“.</p></section><div id="steps"></div><div class="note-wrap"><label for="note">Restarbeit / Mangel-Hinweis</label><textarea id="note" placeholder="Text eingeben …"></textarea></div><div class="sheet-actions"><button class="close" id="closeSheet" type="button">Schließen</button><button class="save" id="saveSheet" type="button">Speichern</button></div></section>
 <section class="sheet" id="bulkSheet" aria-modal="true" role="dialog"><div class="grabber-wrap"><div class="grabber"></div></div><h2>Status setzen</h2><div class="sheet-sub" id="bulkSheetSub"></div><div class="bulk-summary" id="bulkSummary"></div><div id="bulkSteps"></div><div class="sheet-actions"><button class="close" id="closeBulkSheet" type="button">Abbrechen</button><button class="save" id="applyBulk" type="button">Anwenden</button></div></section>
+<section class="sheet" id="planEditSheet" aria-modal="true" role="dialog" aria-labelledby="planEditTitle">
+  <div class="grabber-wrap"><div class="grabber"></div></div>
+  <h2 id="planEditTitle">Plan bearbeiten</h2>
+  <div class="sheet-sub" id="planEditSub">Fassadenelement korrigieren</div>
+  <div class="plan-edit-grid">
+    <label><span>Element-ID</span><input id="planElementId" type="text" readonly></label>
+    <label><span>Elementart</span><select id="planKind"><option value="fenster">Fenster / Tür</option><option value="paneel">Paneel</option></select></label>
+    <label><span>Typ / Kürzel</span><input id="planCode" type="text" maxlength="40" placeholder="z. B. F.1, FB.EG, P"></label>
+    <label><span>Abmessung</span><input id="planDimension" type="text" maxlength="80" placeholder="z. B. 90 × 217,5 cm"></label>
+    <label class="plan-edit-wide"><span>Beschreibung</span><textarea id="planDescription" rows="3" maxlength="400" placeholder="Beschreibung des Elements"></textarea></label>
+    <label id="planColorWrap"><span>Paneelfarbe</span><div class="plan-color-row"><input id="planColor" type="color" value="#b4ae78"><button class="secondary mini" id="planColorClear" type="button">Farbe löschen</button></div></label>
+    <label class="plan-check"><input id="planHidden" type="checkbox"><span>Element in der Ansicht ausblenden</span></label>
+  </div>
+  <div class="plan-split-box">
+    <h3>Element teilen</h3>
+    <p>Für Plan-Korrekturen kann ein vorhandenes Element in mehrere Teilfelder zerlegt werden. Die neuen Teilfelder können anschließend einzeln bearbeitet werden.</p>
+    <div class="plan-split-grid">
+      <label><span>Anzahl</span><select id="planSplitCount"><option value="1">1 · keine Teilung</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option></select></label>
+      <label><span>Richtung</span><select id="planSplitAxis"><option value="horizontal">nebeneinander</option><option value="vertical">übereinander</option></select></label>
+      <label class="plan-edit-wide"><span>Verhältnis (optional)</span><input id="planSplitRatios" type="text" placeholder="z. B. 2,1,2 – leer = gleich groß"></label>
+    </div>
+    <div class="plan-split-actions"><button class="secondary" id="planApplySplit" type="button">Teilung anwenden</button><button class="secondary" id="planRemoveSplit" type="button">Teilung aufheben</button></div>
+    <p class="plan-warning" id="planEditWarning"></p>
+  </div>
+  <div class="sheet-actions"><button class="close" id="closePlanEdit" type="button">Schließen</button><button class="secondary" id="resetPlanEdit" type="button">Korrektur zurücksetzen</button><button class="save" id="savePlanEdit" type="button">Plan speichern</button></div>
+</section>
 <section class="sheet" id="reportSheet" aria-modal="true" role="dialog" aria-labelledby="reportTitle">
   <div class="grabber-wrap"><div class="grabber"></div></div>
   <h2 id="reportTitle">Leistungsstand</h2>
@@ -371,6 +412,9 @@ const SUPABASE_URL='https://hlzjqxzgqdlnflnlyqot.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_BI4pEqnaVFHp3-QjamRe7g_mU3HICsU';
 let db=null,cloudUser=null,cloudReady=false,cloudRole=null;
 const remoteStepBaseline=new Map(),remoteNoteBaseline=new Map();
+const planOverrides=new Map();
+let planDbReady=true,planEditMode=false,activePlanElementId=null;
+let effectiveWindowBands=[],windowParts=[],windowById=new Map();
 const authOverlay=document.getElementById('authOverlay');
 function setSyncStatus(message,isError=false){
  const strip=document.getElementById('syncStrip');strip.classList.toggle('error',!!isError);
@@ -388,12 +432,18 @@ async function allRows(table,columns){
  }
  return rows;
 }
+async function optionalRows(table,columns){
+ try{return await allRows(table,columns);}
+ catch(error){if(table==='plan_element_overrides'){planDbReady=false;console.warn('Plan-Editor-Tabelle nicht verfügbar',error);return [];}throw error;}
+}
 async function loadCloudData(){
  cloudReady=false;setSyncStatus('Arbeitsstände werden geladen …');
- const [steps,notes,photos]=await Promise.all([
+ planDbReady=true;
+ const [steps,notes,photos,planRows]=await Promise.all([
   allRows('field_steps','mode,element_id,step_name,value,progress_percent'),
   allRows('field_notes','mode,element_id,note'),
-  allRows('photo_entries','id,mode,element_id,captured_at,comment')]);
+  allRows('photo_entries','id,mode,element_id,captured_at,comment'),
+  optionalRows('plan_element_overrides','element_id,base_element_id,view_key,part_index,axis,offset_ratio,size_ratio,kind,element_code,dimension,description,color,hidden')]);
  remoteStepBaseline.clear();remoteNoteBaseline.clear();
  // Back up all previous local work BEFORE overwriting caches. No automatic upload.
  try{
@@ -421,10 +471,13 @@ async function loadCloudData(){
   if(!photoHistory[r.element_id])photoHistory[r.element_id]=[];
   photoHistory[r.element_id].push({id:r.id,at:r.captured_at,comment:r.comment});
  }
+ planOverrides.clear();
+ for(const r of planRows)planOverrides.set(r.element_id,r);
+ rebuildPlanGeometry();
  cloudReady=true;
  renderOpenings();renderWindowBands();updateHouseProgress();
  if(activeId)renderPhotoHistory(activeId);
- setSyncStatus('Synchronisiert · '+steps.length+' Arbeitsschritte · '+photos.length+' Fotos protokolliert');
+ setSyncStatus('Synchronisiert · '+steps.length+' Arbeitsschritte · '+photos.length+' Fotos · '+planRows.length+' Plankorrekturen');
 }
 function readLegacyBackup(){
  try{return JSON.parse(localStorage.getItem('gymsued-pre-cloud-backup-v1')||'{}');}catch(_){return {};}
@@ -713,7 +766,71 @@ function buildANordostWindowBands(){
   return out;
 }
 windowBands.push(...buildANordostWindowBands());
-const APP_VERSION = '0.7.4'; // Workflow Fenster dicht / Fassade + Prozent-Sammelfelder.
+function baseWindowPartById(id){
+  for(const band of windowBands){const hit=band.parts.find(p=>p.id===id);if(hit)return hit;}
+  return null;
+}
+function mergePlanRow(base,row){
+  if(!row)return {...base,baseElementId:base.id,planChild:false};
+  const isChild=(row.base_element_id||base.id)!==row.element_id;
+  const geometryOnly=isChild && row.kind==null && row.element_code==null && row.dimension==null && row.description==null && row.color==null && !row.hidden;
+  return {...base,
+    kind:row.kind||base.kind,
+    elementCode:row.element_code||base.elementCode,
+    dim:row.dimension||base.dim,
+    description:row.description||base.description,
+    color:geometryOnly?base.color:row.color,
+    hidden:!!row.hidden,
+    baseElementId:row.base_element_id||base.id,
+    planChild:isChild,
+    planPartIndex:Number(row.part_index||0)
+  };
+}
+function rebuildPlanGeometry(){
+  const childrenByBase=new Map();
+  for(const row of planOverrides.values()){
+    if(!row?.base_element_id||row.element_id===row.base_element_id)continue;
+    if(!childrenByBase.has(row.base_element_id))childrenByBase.set(row.base_element_id,[]);
+    childrenByBase.get(row.base_element_id).push(row);
+  }
+  for(const rows of childrenByBase.values())rows.sort((a,b)=>(a.part_index||0)-(b.part_index||0));
+  effectiveWindowBands=windowBands.map(b=>{
+    const parts=[];
+    for(const base of b.parts){
+      const rootRow=planOverrides.get(base.id);
+      const root=mergePlanRow(base,rootRow);
+      const children=childrenByBase.get(base.id)||[];
+      if(children.length){
+        for(const row of children){
+          const axis=row.axis==='vertical'?'vertical':'horizontal';
+          const offset=Math.max(0,Math.min(1,Number(row.offset_ratio)||0));
+          const size=Math.max(0.001,Math.min(1-offset,Number(row.size_ratio)||1));
+          const childBase={...root,id:row.element_id,baseElementId:base.id,planChild:true,planPartIndex:Number(row.part_index||0)};
+          if(axis==='vertical'){
+            childBase.y=root.y+root.h*offset;childBase.h=root.h*size;
+          }else{
+            childBase.x=root.x+root.w*offset;childBase.w=root.w*size;
+          }
+          const child=mergePlanRow(childBase,row);
+          child.id=row.element_id;child.baseElementId=base.id;child.planChild=true;child.planPartIndex=Number(row.part_index||0);child.planAxis=axis;
+          if(!child.hidden)parts.push(child);
+        }
+      }else if(!root.hidden){parts.push(root);}
+    }
+    return {...b,parts};
+  });
+  windowParts=effectiveWindowBands.flatMap(b=>b.parts);
+  windowById=new Map(windowParts.map(p=>[p.id,p]));
+}
+function planRowsForBase(baseId){return [...planOverrides.values()].filter(r=>r.base_element_id===baseId&&r.element_id!==baseId).sort((a,b)=>(a.part_index||0)-(b.part_index||0));}
+function planCurrentPart(){return activePlanElementId?windowById.get(activePlanElementId):null;}
+function planBaseIdFor(part){return part?.baseElementId||part?.id||null;}
+function planViewKeyForPart(part){
+  if(part?.view)return part.view;
+  const band=effectiveWindowBands.find(b=>b.parts.some(p=>p.id===part?.id));
+  return band?.view||currentView;
+}
+const APP_VERSION = '0.8.0'; // Workflow Fenster dicht / Fassade + Prozent-Sammelfelder.
 const DICHT_STEP_DEFS = [
   {key:'uk_bottom',label:'UK unten',abbr:'UK u.'},
   {key:'uk_top',label:'UK oben',abbr:'UK o.'},
@@ -753,8 +870,7 @@ const WINDOW_KEY = 'gymsued-c-west-fenster-v1';
 const windowStore = JSON.parse(localStorage.getItem(WINDOW_KEY)||'{}');
 let currentMode = 'rohbau';
 const windowLayer=document.getElementById('windowLayer');
-const windowParts=windowBands.flatMap(b=>b.parts);
-const windowById=new Map(windowParts.map(p=>[p.id,p]));
+rebuildPlanGeometry();
 const windowByBand=new Map(windowBands.map(b=>[b.id,b]));
 const KEY = 'gymsued-c-rohbau-multiview-v1';
 let store = JSON.parse(localStorage.getItem(KEY) || '{}');
@@ -811,7 +927,7 @@ function currentCfg(){ return views[currentView]; }
 function currentHouse(){return currentCfg().house;}
 function viewKeysForHouse(house){return Object.keys(views).filter(k=>views[k].house===house);}
 function currentStaticCfg(){ const cfg=currentCfg(); if(currentMode!=='fenster') return cfg; return Object.assign({}, cfg, {viewBox: cfg.windowViewBox || cfg.viewBox, gokY: cfg.windowGokY ?? cfg.gokY, outlineMain: cfg.windowOutlineMain || cfg.outlineMain, outlineExtras: cfg.windowOutlineExtras || cfg.outlineExtras || [], guideRects: cfg.windowGuideRects || cfg.guideRects || [], floorLabels: cfg.windowFloorLabels || cfg.floorLabels || []}); }
-function currentWindowBands(){ return windowBands.filter(b=>(b.view||((b.id||'').startsWith('C-O-')?'east':'west'))===currentView); }
+function currentWindowBands(){ return effectiveWindowBands.filter(b=>(b.view||((b.id||'').startsWith('C-O-')?'east':'west'))===currentView); }
 function currentWindowParts(){ return currentWindowBands().flatMap(b=>b.parts); }
 function currentGeometry(){ return currentMode==='fenster' ? currentWindowParts() : currentCfg().geometry; }
 function activeStepNamesFor(p){ return currentMode==='fenster' ? (p?.kind==='paneel'?panelStepNames:windowStepNames) : stepNames; }
@@ -924,7 +1040,7 @@ function renderStatic(){
   document.getElementById('viewBtn').textContent = cfg.view;
   document.querySelectorAll('#houseMenu .nav-option[data-house]').forEach(btn=>btn.classList.toggle('current', btn.dataset.house===cfg.house));
   document.querySelectorAll('#viewMenu .nav-option[data-view]').forEach(btn=>{btn.hidden=btn.dataset.house!==cfg.house;btn.classList.toggle('current', btn.dataset.view===currentView);});
-  document.getElementById('openingCount').textContent = currentGeometry().length;
+  document.getElementById('openingCount').textContent = currentMode==='fenster'?currentWindowParts().length:currentGeometry().length;
   document.getElementById('modeTitle').textContent=currentMode==='fenster'?'Fassade':'Fenster dicht';
   document.body.classList.toggle('window-mode', currentMode==='fenster');
   document.getElementById('objectCountWrap').lastChild.textContent = currentMode==='fenster'?' Fassadenbauteile':' Öffnungen';
@@ -933,6 +1049,11 @@ function renderStatic(){
   const facadeAvailable=currentWindowBands().length>0;
   document.getElementById('windowMode').disabled = !facadeAvailable;
   document.getElementById('windowMode').title = facadeAvailable?'':'Fassadenbauteile für diese Ansicht folgen.';
+  const planBtn=document.getElementById('planEditToggle');
+  planBtn.hidden=!(cloudRole==='sgs'&&currentMode==='fenster'&&facadeAvailable);
+  planBtn.classList.toggle('active',planEditMode);
+  planBtn.textContent=planEditMode?'Plan bearbeiten ✓':'Plan bearbeiten';
+  document.body.classList.toggle('plan-edit-mode',planEditMode&&currentMode==='fenster');
 
   windowLayer.style.display = currentMode==='fenster'?'':'none';
   openings.style.display = currentMode==='fenster'?'none':'';
@@ -1038,6 +1159,7 @@ function installGestures(el,id){
   const down=e=>{
     if((e.button!==undefined&&e.button!==0)||pinchActive||suppressFieldGesture||modalLocked)return;
     sx=e.clientX;sy=e.clientY;moved=false;longFired=false;
+    if(planEditMode&&currentMode==='fenster'){startedInSelection=false;return;}
     startedInSelection=selected.size>0;
     if(startedInSelection)return; // In der Mehrfachauswahl tippt man weitere Felder an.
     timer=setTimeout(()=>{
@@ -1062,6 +1184,7 @@ function installGestures(el,id){
     clearTimeout(timer);timer=null;pendingFieldPresses.delete(cancel);
     if(longFired){clearAccidentalSelection();return;}
     if(moved||pinchActive||suppressFieldGesture||modalLocked)return;
+    if(planEditMode&&currentMode==='fenster'){openPlanEditor(id);return;}
     if(selected.size>0)toggleSelect(id);
     else openSheet(id);
   };
@@ -1096,7 +1219,7 @@ function renderWindowBands(){
       const yy=mapY(p.y+p.dy);
       const partHeight=Math.abs(mapY(p.y+p.dy+p.h)-yy);
       const attrs={class:'field',x:p.x,y:yy,width:p.w,height:partHeight,rx:.25};
-      if(p.color)attrs.style='fill:'+p.color+';';
+      if(p.kind==='paneel'&&p.color)attrs.style='fill:'+p.color+';';
       el.appendChild(makeSvg('rect',attrs));
       const cx=p.x+p.w/2,cy=yy+partHeight/2;
       const label=p.kind==='paneel'?'P':p.number;
@@ -1381,7 +1504,7 @@ function makeSheetDraggable(sheetId, closeFn){
   });
 }
 function applyScale(){ stage.style.width = ((currentCfg().baseWidth || 1180) * scale) + 'px'; }
-function switchView(viewKey){if(!views[viewKey]||viewKey===currentView)return;currentView=viewKey;if(currentMode==='fenster'&&!currentWindowBands().length)currentMode='rohbau';selected.clear();closeSheet();closeBulkSheet();if(document.getElementById('reportSheet')?.classList.contains('show'))closeReport();render();applyScale();viewer.scrollTo({left:0,top:0,behavior:'smooth'});}
+function switchView(viewKey){if(!views[viewKey]||viewKey===currentView)return;planEditMode=false;currentView=viewKey;if(currentMode==='fenster'&&!currentWindowBands().length)currentMode='rohbau';selected.clear();closeSheet();closeBulkSheet();closePlanEdit();if(document.getElementById('reportSheet')?.classList.contains('show'))closeReport();render();applyScale();viewer.scrollTo({left:0,top:0,behavior:'smooth'});}
 function switchHouse(house){const keys=viewKeysForHouse(house);if(!keys.length)return;const target=keys.includes(currentView)?currentView:keys[0];if(target===currentView){render();return;}switchView(target);}
 function setupNavMenu(buttonId, menuId){
   const button=document.getElementById(buttonId), menu=document.getElementById(menuId);
@@ -1391,6 +1514,129 @@ function setupNavMenu(buttonId, menuId){
 }
 
 
+function closePlanEdit(){
+  const sheet=document.getElementById('planEditSheet');if(!sheet)return;
+  sheet.classList.remove('show');
+  if(!document.querySelector('.sheet.show'))document.getElementById('scrim').classList.remove('show');
+  activePlanElementId=null;unlockModalBackground();
+}
+function planHasStoredWork(id){
+  const st=windowStore[id];
+  const hasSteps=!!st&&Object.values(st.steps||{}).some(v=>normalizeStepRaw(v)!==0);
+  const hasNote=!!st?.note?.trim();
+  const hasPhotos=Array.isArray(photoHistory[id])&&photoHistory[id].length>0;
+  return hasSteps||hasNote||hasPhotos;
+}
+function openPlanEditor(id){
+  if(cloudRole!=='sgs'||currentMode!=='fenster')return;
+  if(!planDbReady){alert('Der Plan-Editor braucht noch die Supabase-Migration v0.8.0. Bitte zuerst die SQL-Datei ausführen.');return;}
+  const part=windowById.get(id);if(!part)return;
+  activePlanElementId=id;
+  const baseId=planBaseIdFor(part),childRows=planRowsForBase(baseId);
+  document.getElementById('planElementId').value=id;
+  document.getElementById('planEditSub').innerHTML=part.planChild?`Teilfeld von <b>${reportEscape(baseId)}</b> · Änderungen gelten nur für dieses Teilfeld.`:`Grundelement <b>${reportEscape(baseId)}</b>`;
+  document.getElementById('planKind').value=part.kind==='paneel'?'paneel':'fenster';
+  document.getElementById('planCode').value=part.elementCode||elementCode(part)||'';
+  document.getElementById('planDimension').value=part.dim||'';
+  document.getElementById('planDescription').value=part.description||'';
+  const color=document.getElementById('planColor');color.value=/^#[0-9a-f]{6}$/i.test(part.color||'')?part.color:'#b4ae78';color.dataset.clear=part.color?'0':'1';
+  document.getElementById('planHidden').checked=!!part.hidden;
+  document.getElementById('planColorWrap').hidden=document.getElementById('planKind').value!=='paneel';
+  document.getElementById('planSplitCount').value=String(childRows.length||1);
+  document.getElementById('planSplitAxis').value=childRows[0]?.axis||'horizontal';
+  document.getElementById('planSplitRatios').value=childRows.length?childRows.map(r=>Number(r.size_ratio||0).toFixed(3).replace(/0+$/,'').replace(/\.$/,'')).join(', '):'';
+  document.getElementById('planRemoveSplit').disabled=!childRows.length;
+  document.getElementById('planApplySplit').disabled=!!part.planChild;
+  const warning=document.getElementById('planEditWarning');
+  warning.textContent=part.planChild?'Teilung wird am Grundelement verwaltet. Für eine neue Aufteilung zuerst „Teilung aufheben“.':(planHasStoredWork(baseId)?'Hinweis: Für dieses Element existiert bereits Arbeitsstand/Fotoprotokoll. Eine Teilung erzeugt neue Teil-IDs; vorhandene Einträge bleiben am Grundelement gespeichert.':'');
+  lockModalBackground();document.getElementById('scrim').classList.add('show');document.getElementById('planEditSheet').classList.add('show');
+}
+function planRowPayloadFor(part){
+  const baseId=planBaseIdFor(part);
+  const existing=planOverrides.get(part.id);
+  const kind=document.getElementById('planKind').value==='paneel'?'paneel':'fenster';
+  const color=document.getElementById('planColor');
+  return {
+    element_id:part.id,
+    base_element_id:baseId,
+    view_key:planViewKeyForPart(part),
+    part_index:existing?.part_index??(part.planPartIndex||0),
+    axis:existing?.axis||part.planAxis||'horizontal',
+    offset_ratio:existing?.offset_ratio??0,
+    size_ratio:existing?.size_ratio??1,
+    kind,
+    element_code:document.getElementById('planCode').value.trim()||null,
+    dimension:document.getElementById('planDimension').value.trim()||null,
+    description:document.getElementById('planDescription').value.trim()||null,
+    color:(kind==='paneel'&&color.dataset.clear!=='1')?color.value:null,
+    hidden:document.getElementById('planHidden').checked,
+    updated_by:cloudUser.id
+  };
+}
+async function savePlanEditor(){
+  const part=planCurrentPart();if(!part)return;
+  if(!cloudReady||cloudRole!=='sgs')return;
+  const btn=document.getElementById('savePlanEdit');btn.disabled=true;
+  try{
+    const payload=planRowPayloadFor(part);
+    const {data,error}=await db.from('plan_element_overrides').upsert(payload,{onConflict:'element_id'}).select('element_id,base_element_id,view_key,part_index,axis,offset_ratio,size_ratio,kind,element_code,dimension,description,color,hidden').single();
+    if(error)throw error;
+    planOverrides.set(data.element_id,data);rebuildPlanGeometry();render();setSyncStatus('Plankorrektur gespeichert · '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));closePlanEdit();
+  }catch(error){setSyncStatus('Plankorrektur nicht gespeichert: '+error.message,true);alert(error.message);}finally{btn.disabled=false;}
+}
+async function resetPlanEditor(){
+  const part=planCurrentPart();if(!part||!cloudReady||cloudRole!=='sgs')return;
+  try{
+    if(part.planChild){
+      const existing=planOverrides.get(part.id);if(!existing)return;
+      const payload={...existing,kind:null,element_code:null,dimension:null,description:null,color:null,hidden:false,updated_by:cloudUser.id};
+      const {data,error}=await db.from('plan_element_overrides').upsert(payload,{onConflict:'element_id'}).select('element_id,base_element_id,view_key,part_index,axis,offset_ratio,size_ratio,kind,element_code,dimension,description,color,hidden').single();if(error)throw error;planOverrides.set(data.element_id,data);
+    }else{
+      const {error}=await db.from('plan_element_overrides').delete().eq('element_id',part.id);if(error)throw error;planOverrides.delete(part.id);
+    }
+    rebuildPlanGeometry();render();setSyncStatus('Plankorrektur zurückgesetzt');closePlanEdit();
+  }catch(error){setSyncStatus('Zurücksetzen fehlgeschlagen: '+error.message,true);alert(error.message);}
+}
+function parseSplitRatios(count){
+  const raw=document.getElementById('planSplitRatios').value.trim();if(!raw)return Array(count).fill(1);
+  const vals=raw.split(/[;,\s]+/).map(v=>Number(v.replace(',','.'))).filter(v=>Number.isFinite(v)&&v>0);
+  return vals.length===count?vals:Array(count).fill(1);
+}
+async function applyPlanSplit(){
+  const part=planCurrentPart();if(!part||part.planChild)return;
+  const baseId=planBaseIdFor(part),base=baseWindowPartById(baseId);if(!base)return;
+  const count=Math.max(1,Math.min(8,Number(document.getElementById('planSplitCount').value)||1));
+  if(count===1){await removePlanSplit();return;}
+  if(planHasStoredWork(baseId)&&!confirm('Für das Grundelement existiert bereits Arbeitsstand oder Fotoprotokoll. Die neuen Teilfelder erhalten neue IDs. Vorhandene Einträge bleiben am Grundelement. Trotzdem teilen?'))return;
+  const axis=document.getElementById('planSplitAxis').value==='vertical'?'vertical':'horizontal',ratios=parseSplitRatios(count),sum=ratios.reduce((a,b)=>a+b,0);
+  let offset=0;const rows=[];
+  for(let i=0;i<count;i++){
+    const size=ratios[i]/sum;
+    rows.push({element_id:`${baseId}::${String(i+1).padStart(2,'0')}`,base_element_id:baseId,view_key:planViewKeyForPart(part),part_index:i+1,axis,offset_ratio:Number(offset.toFixed(6)),size_ratio:Number(size.toFixed(6)),kind:null,element_code:null,dimension:null,description:null,color:null,hidden:false,updated_by:cloudUser.id});
+    offset+=size;
+  }
+  try{
+    const {error:delErr}=await db.from('plan_element_overrides').delete().eq('base_element_id',baseId).neq('element_id',baseId);if(delErr)throw delErr;
+    const {data,error}=await db.from('plan_element_overrides').upsert(rows,{onConflict:'element_id'}).select('element_id,base_element_id,view_key,part_index,axis,offset_ratio,size_ratio,kind,element_code,dimension,description,color,hidden');if(error)throw error;
+    for(const key of [...planOverrides.keys()])if(planOverrides.get(key)?.base_element_id===baseId&&key!==baseId)planOverrides.delete(key);
+    for(const row of data||rows)planOverrides.set(row.element_id,row);
+    rebuildPlanGeometry();render();setSyncStatus('Element in '+count+' Teilfelder aufgeteilt');closePlanEdit();
+  }catch(error){setSyncStatus('Teilung fehlgeschlagen: '+error.message,true);alert(error.message);}
+}
+async function removePlanSplit(){
+  const part=planCurrentPart();if(!part)return;const baseId=planBaseIdFor(part),children=planRowsForBase(baseId);if(!children.length)return;
+  if(children.some(r=>planHasStoredWork(r.element_id))&&!confirm('Für mindestens ein Teilfeld existiert Arbeitsstand oder Fotoprotokoll. Die Daten bleiben gespeichert, sind nach Aufheben der Teilung aber nicht mehr in der Ansicht sichtbar. Teilung trotzdem aufheben?'))return;
+  try{
+    const {error}=await db.from('plan_element_overrides').delete().eq('base_element_id',baseId).neq('element_id',baseId);if(error)throw error;
+    for(const r of children)planOverrides.delete(r.element_id);rebuildPlanGeometry();render();setSyncStatus('Teilung aufgehoben');closePlanEdit();
+  }catch(error){setSyncStatus('Teilung konnte nicht aufgehoben werden: '+error.message,true);alert(error.message);}
+}
+function togglePlanEditMode(){
+  if(cloudRole!=='sgs'||currentMode!=='fenster')return;
+  if(!planDbReady){alert('Bitte zuerst die Supabase-Migration v0.8.0 für den Plan-Editor ausführen.');return;}
+  planEditMode=!planEditMode;selected.clear();render();
+  setSyncStatus(planEditMode?'Plan bearbeiten aktiv · Element antippen':'Plan bearbeiten beendet');
+}
 /* Report: current loaded Supabase state, no separate report data is persisted. */
 function reportEscape(value){return String(value??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
 function reportStepsFor(mode,item){return mode==='fenster'?(item?.kind==='paneel'?panelStepNames:windowStepNames):stepNames;}
@@ -1715,9 +1961,19 @@ document.getElementById('saveSheet').onclick=async()=>{
 };
 document.getElementById('closeSheet').onclick=closeSheet;
 document.getElementById('closeBulkSheet').onclick=closeBulkSheet;
+document.getElementById('planEditToggle').onclick=togglePlanEditMode;
+document.getElementById('closePlanEdit').onclick=closePlanEdit;
+document.getElementById('savePlanEdit').onclick=savePlanEditor;
+document.getElementById('resetPlanEdit').onclick=resetPlanEditor;
+document.getElementById('planApplySplit').onclick=applyPlanSplit;
+document.getElementById('planRemoveSplit').onclick=removePlanSplit;
+document.getElementById('planKind').addEventListener('change',()=>{document.getElementById('planColorWrap').hidden=document.getElementById('planKind').value!=='paneel';});
+document.getElementById('planColor').addEventListener('input',e=>{e.target.dataset.clear='0';});
+document.getElementById('planColorClear').onclick=()=>{document.getElementById('planColor').dataset.clear='1';};
+
 document.getElementById('applyBulk').onclick=applyBulkChanges;
-document.getElementById('scrim').onclick=()=>{if(document.getElementById('photoSheet').classList.contains('show')){closePhotoSheet();return;}if(document.getElementById('reportSheet').classList.contains('show')){closeReport();return;}closeSheet();closeBulkSheet();};
-makeSheetDraggable('sheet', closeSheet); makeSheetDraggable('bulkSheet', closeBulkSheet);
+document.getElementById('scrim').onclick=()=>{if(document.getElementById('photoSheet').classList.contains('show')){closePhotoSheet();return;}if(document.getElementById('planEditSheet').classList.contains('show')){closePlanEdit();return;}if(document.getElementById('reportSheet').classList.contains('show')){closeReport();return;}closeSheet();closeBulkSheet();};
+makeSheetDraggable('sheet', closeSheet); makeSheetDraggable('bulkSheet', closeBulkSheet); makeSheetDraggable('planEditSheet', closePlanEdit);
 document.getElementById('clearSel').onclick=clearSelection;
 document.getElementById('deselectBottom').onclick=clearSelection;
 document.getElementById('bulkOpen').onclick=openBulkSheet;
@@ -1729,7 +1985,7 @@ const closeViewMenu=setupNavMenu('viewBtn','viewMenu');
 document.addEventListener('click',()=>{ closeHouseMenu(); closeViewMenu(); });
 document.querySelectorAll('#houseMenu .nav-option[data-house]').forEach(btn=>btn.onclick=()=>switchHouse(btn.dataset.house));
 document.querySelectorAll('#viewMenu .nav-option[data-view]').forEach(btn=>btn.onclick=()=>switchView(btn.dataset.view));
-function switchMode(mode){if(currentMode===mode)return;if(mode==='fenster'&&!currentWindowBands().length)return;currentMode=mode;selected.clear();closeSheet();closeBulkSheet();if(document.getElementById('reportSheet')?.classList.contains('show'))closeReport();render();}
+function switchMode(mode){if(currentMode===mode)return;if(mode==='fenster'&&!currentWindowBands().length)return;if(mode!=='fenster')planEditMode=false;currentMode=mode;selected.clear();closeSheet();closeBulkSheet();closePlanEdit();if(document.getElementById('reportSheet')?.classList.contains('show'))closeReport();render();}
 document.getElementById('roughMode').onclick=()=>switchMode('rohbau');
 document.getElementById('windowMode').onclick=()=>switchMode('fenster');
 window.addEventListener('resize',()=>{});
