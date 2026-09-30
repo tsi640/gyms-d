@@ -546,10 +546,36 @@ function splitBandIntoParts(view, source, prefix, specs){
   let cursor=source.x;
   return [{id:prefix+'-BAND',view,type:prefix.split('-').slice(-1)[0],level:source.level,side:'',x:source.x,y:source.y,w:source.w,h:source.h,dy:0,parts:specs.map((spec,idx)=>{
     const width=idx===specs.length-1 ? (source.x+source.w-cursor) : source.w*((spec.ratio||1)/total);
-    const part={id:prefix+'-'+String(idx+1).padStart(2,'0'),bandId:prefix+'-BAND',view,level:source.level,kind:'fenster',number:String(idx+1).padStart(2,'0'),dim:spec.dim||'',description:spec.description||'',elementCode:spec.code||'FE',x:cursor,y:source.y,w:width,h:source.h,dy:0};
+    const part={id:prefix+'-'+String(idx+1).padStart(2,'0'),bandId:prefix+'-BAND',view,level:source.level,kind:spec.kind||'fenster',number:spec.number||String(idx+1).padStart(2,'0'),dim:spec.dim||'',description:spec.description||'',elementCode:spec.code||'FE',x:cursor,y:source.y,w:width,h:source.h,dy:0};
+    if(spec.color) part.color=spec.color;
     cursor+=width;
     return part;
   })}];
+}
+function buildBandFromGeometryIds(view, byId, ids, bandId, type, facadeInfoFor){
+  const colorCycle=['#dbd9a8','#abcba6','#dae5e1','#9da3bb','#abcba6'];
+  const geoms=ids.map(id=>byId.get(id)).filter(Boolean).sort((a,b)=>a.x-b.x);
+  if(!geoms.length) return null;
+  const level=geoms[0].level;
+  const y=Math.min(...geoms.map(g=>g.y));
+  const h=Math.max(...geoms.map(g=>g.h));
+  const x=Math.min(...geoms.map(g=>g.x));
+  const w=Math.max(...geoms.map(g=>g.x+g.w))-x;
+  const parts=[];
+  let paneelIndex=0;
+  geoms.forEach((g, idx)=>{
+    if(idx>0){
+      const prev=geoms[idx-1];
+      const gap=g.x-(prev.x+prev.w);
+      if(gap>1){
+        paneelIndex+=1;
+        parts.push({id:`${bandId}-P${String(paneelIndex).padStart(2,'0')}`,bandId,view,level,kind:'paneel',number:`P${String(paneelIndex).padStart(2,'0')}`,dim:'40 × 217,5 cm',description:'Alu-Paneel, hinterlüftet',elementCode:'P',x:prev.x+prev.w,y,w:gap,h,dy:0,color:colorCycle[(paneelIndex-1)%colorCycle.length]});
+      }
+    }
+    const info=facadeInfoFor(g, type);
+    parts.push({id:`${bandId}-${String(parts.filter(p=>p.kind==='fenster').length+1).padStart(2,'0')}`,bandId,view,level,kind:'fenster',number:String((parts.filter(p=>p.kind==='fenster').length+1)).padStart(2,'0'),dim:g.dim||'',description:info.description,elementCode:info.code||'FE',x:g.x,y:g.y,w:g.w,h:g.h,dy:0});
+  });
+  return {id:bandId,view,type,level,side:'',x,y,w,h,dy:0,parts};
 }
 function buildANordostWindowBands(){
   const cfg=views['a-nordost'];
@@ -558,7 +584,7 @@ function buildANordostWindowBands(){
   const geoms=cfg.geometry.filter(g=>String(g.id||'').startsWith('A-NO-'));
   const byId=new Map(geoms.map(g=>[g.id,g]));
   const parseNum=g=>Number(String(g.label||g.number||String(g.id).split('-').pop()).replace(/[^0-9]/g,''))||0;
-  const facadeInfoFor=g=>{
+  const facadeInfoFor=(g, type='')=>{
     const num=parseNum(g);
     const dim=String(g.dim||'');
     if(g.level==='UG'){
@@ -567,25 +593,35 @@ function buildANordostWindowBands(){
       return {code:'F',description:'Lochfenster'};
     }
     if(g.level==='EG') return {code:'FE',description:'Fensterelement'};
-    if((g.w||0)<13 || dim.includes('80')) return {code:'DK',description:'Fensterelement · Dreh- / Kipp mit Glasbrüstung'};
-    if((g.w||0)<18 || dim.includes('90')) return {code:'DK',description:'Fensterelement · Dreh- / Kipp mit Glasbrüstung'};
-    if([5,6,18,19,20,21].includes(num)) return {code:'FE',description:'Fensterelement'};
-    return {code:'FE',description:'Fensterelement'};
+    if(type==='FB.1.1 L'){
+      return (num===2 || num===11 || num===22) ? {code:'DK',description:'Fensterelement ['+type+'] · Dreh- / Kipp mit Glasbrüstung'} : {code:'FE',description:'Fensterelement ['+type+']'};
+    }
+    if((g.w||0)<13 || dim.includes('80')) return {code:'DK',description:'Fensterelement ['+(type||'FB.2.1 A')+'] · Dreh- / Kipp mit Glasbrüstung'};
+    if((g.w||0)<18 || dim.includes('90')) return {code:'DK',description:'Fensterelement ['+(type||'FB.2.1 A')+'] · Dreh- / Kipp mit Glasbrüstung'};
+    return {code:'FE',description:'Fensterelement ['+(type||'FB.2.1 A')+']'};
   };
-  // Standard-OG-Fenster als einzelne Fassadenelemente auf den vorhandenen Rohbaupositionen.
-  geoms.filter(g=>/^[1-7]OG$/.test(g.level) && g.kind==='window').forEach(g=>{
-    const info=facadeInfoFor(g);
-    const num=String(parseNum(g)).padStart(2,'0');
-    out.push(makeIndividualWindowBand('a-nordost', g, {id:g.id.replace('A-NO','A-NO-F'),view:'a-nordost',level:g.level,kind:'fenster',number:num,dim:g.dim,description:info.description,elementCode:info.code,x:g.x,y:g.y,w:g.w,h:g.h,dy:0}));
+  const ogLevels=['7OG','6OG','5OG','4OG','3OG','2OG','1OG'];
+  const rowGroups=[
+    {type:'FB.1.1 L', ids:[1,2]},
+    {type:'FB.2.1 A', ids:[3,4,5,6,7,8,9]},
+    {type:'FB.1.1 L', ids:[10,11]},
+    {type:'FB.2.1 A', ids:[12,13,14]},
+    {type:'FB.2.1 A', ids:[15,16,17,18,19,20,21]},
+    {type:'FB.1.1 L', ids:[22,23]}
+  ];
+  ogLevels.forEach(level=>{
+    rowGroups.forEach((group,gIdx)=>{
+      const ids=group.ids.map(n=>`A-NO-${level}-${String(n).padStart(2,'0')}`);
+      const band=buildBandFromGeometryIds('a-nordost', byId, ids, `A-NO-${level}-${group.type.replace(/[^A-Z0-9.]/g,'').replace(/\./g,'_')}-${gIdx+1}`, group.type, facadeInfoFor);
+      if(band) out.push(band);
+    });
   });
-  // Treppenhaus: in der Fensteransicht in 7 gleich hohe Elemente je Geschoss auflösen.
   const trh=byId.get('A-NO-TRH-01');
   if(trh){
     const floors=['7OG','6OG','5OG','4OG','3OG','2OG','1OG'];
     const partH=trh.h/floors.length;
     out.push({id:'A-NO-TRH-FASSADE',view:'a-nordost',type:'VF.1.1',level:'TRH',side:'mitte',x:trh.x,y:trh.y,w:trh.w,h:trh.h,dy:0,parts:floors.map((level,idx)=>({id:'A-NO-TRH-F'+String(idx+1).padStart(2,'0'),bandId:'A-NO-TRH-FASSADE',view:'a-nordost',level,kind:'fenster',number:String(idx+1).padStart(2,'0'),dim:'280 × 285 cm',description:'Fensterelement mit Unterlicht [VF.1.1]',elementCode:'DK/UL',x:trh.x,y:trh.y+idx*partH,w:trh.w,h:partH,dy:0}))});
   }
-  // Erdgeschoss in Fassadenelemente aufteilen.
   const egLeft=byId.get('A-NO-EG-01');
   if(egLeft){
     out.push(...splitBandIntoParts('a-nordost', egLeft, 'A-NO-EG-L', [
@@ -619,7 +655,6 @@ function buildANordostWindowBands(){
       {ratio:115.5,code:'F',description:'FB.EG · Festverglasung',dim:'115,5 × 290 cm'}
     ]));
   }
-  // Untergeschoss.
   geoms.filter(g=>g.level==='UG' && g.kind==='window').forEach(g=>{
     const info=facadeInfoFor(g);
     const num=String(parseNum(g)).padStart(2,'0');
@@ -628,7 +663,7 @@ function buildANordostWindowBands(){
   return out;
 }
 windowBands.push(...buildANordostWindowBands());
-const APP_VERSION = '0.7.2'; // Workflow Fenster dicht / Fassade + Prozent-Sammelfelder.
+const APP_VERSION = '0.7.3'; // Workflow Fenster dicht / Fassade + Prozent-Sammelfelder.
 const DICHT_STEP_DEFS = [
   {key:'uk_bottom',label:'UK unten',abbr:'UK u.'},
   {key:'uk_top',label:'UK oben',abbr:'UK o.'},
