@@ -587,25 +587,28 @@ function buildANordostWindowBands(){
   const facadeInfoFor=(g, type='')=>{
     const num=parseNum(g);
     const dim=String(g.dim||'');
+    if(type==='F.1') return {code:'F.1',description:'Fensterelement [F.1] · Brandschutzverglasung EI 90'};
+    if(type==='F.3.1') return {code:'F.3.1',description:'Lochfenster [F.3.1] · Dreh- / Kipp'};
     if(g.level==='UG'){
       if(dim.includes('201')) return {code:'T',description:'Aluminium-Fassadentür'};
       if(dim.includes('171')) return {code:'F',description:'Lochfenster'};
       return {code:'F',description:'Lochfenster'};
     }
-    if(g.level==='EG') return {code:'FE',description:'Fensterelement'};
-    if(type==='FB.1.1 L'){
-      return (num===2 || num===11 || num===22) ? {code:'DK',description:'Fensterelement ['+type+'] · Dreh- / Kipp mit Glasbrüstung'} : {code:'FE',description:'Fensterelement ['+type+']'};
+    if(g.level==='EG') return {code:'FE',description:'FB.EG'};
+    if(type==='FB.1.1 R' || type==='FB.1.1 L'){
+      return (num===2 || num===11 || num===22) ? {code:'DK',description:`Fensterelement [${type}] · Dreh- / Kipp mit Glasbrüstung`} : {code:'FE',description:`Fensterelement [${type}]`};
     }
-    if((g.w||0)<13 || dim.includes('80')) return {code:'DK',description:'Fensterelement ['+(type||'FB.2.1 A')+'] · Dreh- / Kipp mit Glasbrüstung'};
-    if((g.w||0)<18 || dim.includes('90')) return {code:'DK',description:'Fensterelement ['+(type||'FB.2.1 A')+'] · Dreh- / Kipp mit Glasbrüstung'};
-    return {code:'FE',description:'Fensterelement ['+(type||'FB.2.1 A')+']'};
+    if(type==='FB.1.2 R'){
+      return (num===11) ? {code:'DK',description:'Fensterelement [FB.1.2 R] · Dreh- / Kipp mit Glasbrüstung'} : {code:'FE',description:'Fensterelement [FB.1.2 R]'};
+    }
+    if((g.w||0)<13 || dim.includes('80')) return {code:'DK',description:`Fensterelement [${type||'FB.2.1 A'}] · Dreh- / Kipp mit Glasbrüstung`};
+    return {code:'FE',description:`Fensterelement [${type||'FB.2.1 A'}]`};
   };
   const ogLevels=['7OG','6OG','5OG','4OG','3OG','2OG','1OG'];
   const rowGroups=[
-    {type:'FB.1.1 L', ids:[1,2]},
+    {type:'FB.1.1 R', ids:[1,2]},
     {type:'FB.2.1 A', ids:[3,4,5,6,7,8,9]},
-    {type:'FB.1.1 L', ids:[10,11]},
-    {type:'FB.2.1 A', ids:[12,13,14]},
+    {type:'FB.1.2 R', ids:[10,11]},
     {type:'FB.2.1 A', ids:[15,16,17,18,19,20,21]},
     {type:'FB.1.1 L', ids:[22,23]}
   ];
@@ -615,45 +618,92 @@ function buildANordostWindowBands(){
       const band=buildBandFromGeometryIds('a-nordost', byId, ids, `A-NO-${level}-${group.type.replace(/[^A-Z0-9.]/g,'').replace(/\./g,'_')}-${gIdx+1}`, group.type, facadeInfoFor);
       if(band) out.push(band);
     });
+    [12,13,14].forEach((n, idx)=>{
+      const g=byId.get(`A-NO-${level}-${String(n).padStart(2,'0')}`);
+      if(!g) return;
+      const info=facadeInfoFor(g, 'F.1');
+      out.push(makeIndividualWindowBand('a-nordost', g, {id:`A-NO-${level}-F1-${idx+1}`,view:'a-nordost',level,kind:'fenster',number:String(idx+1).padStart(2,'0'),dim:'90 × 217,5 cm',description:info.description,elementCode:info.code,x:g.x,y:g.y,w:g.w,h:g.h,dy:0}));
+    });
   });
   const trh=byId.get('A-NO-TRH-01');
   if(trh){
     const floors=['7OG','6OG','5OG','4OG','3OG','2OG','1OG'];
-    const partH=trh.h/floors.length;
-    out.push({id:'A-NO-TRH-FASSADE',view:'a-nordost',type:'VF.1.1',level:'TRH',side:'mitte',x:trh.x,y:trh.y,w:trh.w,h:trh.h,dy:0,parts:floors.map((level,idx)=>({id:'A-NO-TRH-F'+String(idx+1).padStart(2,'0'),bandId:'A-NO-TRH-FASSADE',view:'a-nordost',level,kind:'fenster',number:String(idx+1).padStart(2,'0'),dim:'280 × 285 cm',description:'Fensterelement mit Unterlicht [VF.1.1]',elementCode:'DK/UL',x:trh.x,y:trh.y+idx*partH,w:trh.w,h:partH,dy:0}))});
+    const windowUnits=285;
+    const panelUnits=45;
+    const totalUnits=floors.length*windowUnits + (floors.length-1)*panelUnits;
+    const scale=trh.h/totalUnits;
+    const parts=[];
+    const color='#b4ae78';
+    let cursorY=trh.y;
+    floors.forEach((level,idx)=>{
+      const winH=windowUnits*scale;
+      parts.push({id:'A-NO-TRH-F'+String(idx+1).padStart(2,'0'),bandId:'A-NO-TRH-FASSADE',view:'a-nordost',level,kind:'fenster',number:String(idx+1).padStart(2,'0'),dim:'280 × 285 cm',description:'Fensterelement mit Unterlicht [VF.1.1]',elementCode:'VF.1.1',x:trh.x,y:cursorY,w:trh.w,h:winH,dy:0});
+      cursorY+=winH;
+      if(idx<floors.length-1){
+        const paneelH=panelUnits*scale;
+        parts.push({id:'A-NO-TRH-P'+String(idx+1).padStart(2,'0'),bandId:'A-NO-TRH-FASSADE',view:'a-nordost',level,kind:'paneel',number:`P${String(idx+1).padStart(2,'0')}`,dim:'280 × 45 cm',description:'Alu-Paneel, hinterlüftet · 280 × 45 cm',elementCode:'P',x:trh.x,y:cursorY,w:trh.w,h:paneelH,dy:0,color});
+        cursorY+=paneelH;
+      }
+    });
+    out.push({id:'A-NO-TRH-FASSADE',view:'a-nordost',type:'VF.1.1',level:'TRH',side:'mitte',x:trh.x,y:trh.y,w:trh.w,h:trh.h,dy:0,parts});
   }
+  const leftSpecs=[
+    {ratio:115.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'F',description:'FB.EG',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'F',description:'FB.EG',dim:'115,5 × 290 cm'},
+    {ratio:85,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'85 × 290 cm'},
+    {ratio:35,code:'F',description:'FB.EG',dim:'35 × 290 cm'},
+    {ratio:115.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'F',description:'FB.EG',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'F',description:'FB.EG',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'F',description:'FB.EG',dim:'115,5 × 290 cm'},
+    {ratio:135,code:'T/OL',description:'Aluminium-Fassadentür mit Oberlicht · AL_A_O_007_2',dim:'135 × 290 cm'},
+    {ratio:115.5,code:'F',description:'FB.EG',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'F',description:'FB.EG',dim:'115,5 × 290 cm'},
+    {ratio:50,code:'F',description:'FB.EG',dim:'50 × 290 cm'},
+    {ratio:113,code:'F',description:'FB.EG',dim:'113 × 290 cm'},
+    {ratio:220,code:'T/OL',description:'Aluminium-Fassadentür mit Oberlicht · AL_A_O_004_2',dim:'220 × 290 cm'},
+    {ratio:105,code:'F',description:'FB.EG',dim:'105 × 290 cm'}
+  ];
   const egLeft=byId.get('A-NO-EG-01');
   if(egLeft){
-    out.push(...splitBandIntoParts('a-nordost', egLeft, 'A-NO-EG-L', [
-      {ratio:119,code:'F',description:'FB.EG · Festverglasung',dim:'119 × 290 cm'},
-      {ratio:135,code:'T/OL',description:'Aluminium-Fassadentür mit Oberlicht',dim:'135 × 290 cm'},
-      {ratio:115.5,code:'DK/UL',description:'FB.EG · Fensterelement mit Unterlicht (Öffnungselement)',dim:'115,5 × 290 cm'},
-      {ratio:100,code:'F',description:'FB.EG · Festverglasung',dim:'100 × 290 cm'},
-      {ratio:115.5,code:'DK/UL',description:'FB.EG · Fensterelement mit Unterlicht (Öffnungselement)',dim:'115,5 × 290 cm'},
-      {ratio:115.5,code:'F',description:'FB.EG · Festverglasung',dim:'115,5 × 290 cm'}
-    ]));
+    const bands=splitBandIntoParts('a-nordost', egLeft, 'A-NO-EG-L', leftSpecs);
+    if(bands[0]) bands[0].type='FB.EG';
+    out.push(...bands);
   }
   ['A-NO-EG-02','A-NO-EG-03','A-NO-EG-04'].forEach((id,idx)=>{
     const g=byId.get(id); if(!g) return;
-    const data=[
-      {code:'T/OL',description:'Aluminium-Fassadentür mit Oberlicht',dim:'135 × 290 cm'},
-      {code:'F',description:'FB.EG · Festverglasung',dim:'115,5 × 290 cm'},
-      {code:'DK/UL',description:'FB.EG · Fensterelement mit Unterlicht (Öffnungselement)',dim:'115,5 × 290 cm'}
-    ][idx];
-    out.push(makeIndividualWindowBand('a-nordost', g, {id:id+'-F',view:'a-nordost',level:'EG',kind:'fenster',number:String(idx+2).padStart(2,'0'),dim:data.dim,description:data.description,elementCode:data.code,x:g.x,y:g.y,w:g.w,h:g.h,dy:0}));
+    out.push(makeIndividualWindowBand('a-nordost', g, {id:id+'-F31',view:'a-nordost',level:'EG',kind:'fenster',number:String(idx+1).padStart(2,'0'),dim:'85 × 166 cm',description:'Lochfenster [F.3.1] · Dreh- / Kipp',elementCode:'F.3.1',x:g.x,y:g.y,w:g.w,h:g.h,dy:0}));
   });
+  const rightSpecs=[
+    {ratio:70,code:'F',description:'FB.EG',dim:'70 × 290 cm'},
+    {ratio:115.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'F',description:'FB.EG',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'F',description:'FB.EG',dim:'115,5 × 290 cm'},
+    {ratio:135,code:'T/OL',description:'Aluminium-Fassadentür mit Oberlicht · AL_A_O_011_1',dim:'135 × 290 cm'},
+    {ratio:56,code:'F',description:'FB.EG',dim:'56 × 290 cm'},
+    {ratio:87,code:'F',description:'FB.EG',dim:'87 × 290 cm'},
+    {ratio:115.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'F',description:'FB.EG',dim:'115,5 × 290 cm'},
+    {ratio:135,code:'T/OL',description:'Aluminium-Fassadentür mit Oberlicht · AL_A_O_022_1',dim:'135 × 290 cm'},
+    {ratio:115.5,code:'F',description:'FB.EG',dim:'115,5 × 290 cm'},
+    {ratio:115.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'115,5 × 290 cm'},
+    {ratio:100,code:'F',description:'FB.EG',dim:'100 × 290 cm'},
+    {ratio:115.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'115,5 × 290 cm'},
+    {ratio:135,code:'T/OL',description:'Aluminium-Fassadentür mit Oberlicht · AL_A_O_014_1',dim:'135 × 290 cm'},
+    {ratio:119,code:'F',description:'FB.EG',dim:'119 × 290 cm'}
+  ];
   const egRight=byId.get('A-NO-EG-05');
   if(egRight){
-    out.push(...splitBandIntoParts('a-nordost', egRight, 'A-NO-EG-R', [
-      {ratio:115.5,code:'F',description:'FB.EG · Festverglasung',dim:'115,5 × 290 cm'},
-      {ratio:87,code:'DK/UL',description:'FB.EG · Fensterelement mit Unterlicht (Öffnungselement)',dim:'87 × 290 cm'},
-      {ratio:56,code:'F',description:'FB.EG · Festverglasung',dim:'56 × 290 cm'},
-      {ratio:135,code:'T/OL',description:'Aluminium-Fassadentür mit Oberlicht',dim:'135 × 290 cm'},
-      {ratio:115.5,code:'F',description:'FB.EG · Festverglasung',dim:'115,5 × 290 cm'},
-      {ratio:115.5,code:'DK/UL',description:'FB.EG · Fensterelement mit Unterlicht (Öffnungselement)',dim:'115,5 × 290 cm'},
-      {ratio:100,code:'F',description:'FB.EG · Festverglasung',dim:'100 × 290 cm'},
-      {ratio:115.5,code:'F',description:'FB.EG · Festverglasung',dim:'115,5 × 290 cm'}
-    ]));
+    const bands=splitBandIntoParts('a-nordost', egRight, 'A-NO-EG-R', rightSpecs);
+    if(bands[0]) bands[0].type='FB.EG';
+    out.push(...bands);
   }
   geoms.filter(g=>g.level==='UG' && g.kind==='window').forEach(g=>{
     const info=facadeInfoFor(g);
@@ -663,7 +713,7 @@ function buildANordostWindowBands(){
   return out;
 }
 windowBands.push(...buildANordostWindowBands());
-const APP_VERSION = '0.7.3'; // Workflow Fenster dicht / Fassade + Prozent-Sammelfelder.
+const APP_VERSION = '0.7.4'; // Workflow Fenster dicht / Fassade + Prozent-Sammelfelder.
 const DICHT_STEP_DEFS = [
   {key:'uk_bottom',label:'UK unten',abbr:'UK u.'},
   {key:'uk_top',label:'UK oben',abbr:'UK o.'},
