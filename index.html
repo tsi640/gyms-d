@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1d1f22">
-<meta name="gym-sued-version" content="0.9.2">
+<meta name="gym-sued-version" content="0.10.0">
 <title>GymSüd · Fassaden-QS</title>
 <script>
 /* iOS WebKit sticky-header rasterization workaround, applied before first paint. */
@@ -25,7 +25,7 @@ if(/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacInt
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);overscroll-behavior:none}
-body{user-select:none;padding-bottom:0}
+body{user-select:none;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
 button,input,textarea{font:inherit}
 /* Do not render page content behind the iOS status bar. viewport-fit=contain
    lets Safari own its top inset rather than applying its scroll-edge blur to our header. */
@@ -287,12 +287,41 @@ body.plan-edit-mode .window-part{cursor:crosshair}
 .plan-split-box h3{margin:0 0 5px;font-size:13px}.plan-split-box p{margin:0 0 10px;font-size:11px;color:var(--muted);line-height:1.45}
 .plan-split-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.plan-split-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.plan-warning{color:#c78b28!important;font-weight:700}.plan-edit-child-note{font-size:11px;color:var(--accent);font-weight:750}
 @media(max-width:560px){.plan-edit-grid,.plan-split-grid{grid-template-columns:1fr}.plan-edit-wide{grid-column:auto}}
+
+
+/* App-Bereiche: Übersicht (read-only Auswertung) und Fassaden & QS. */
+.overview-controls{display:none;margin:0 10px 10px;padding:12px;border:1px solid var(--soft);border-radius:14px;background:var(--sheet);box-shadow:0 2px 10px rgba(0,0,0,.035)}
+body.overview-section .overview-controls{display:block}
+.overview-filter-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.overview-filter{display:flex;flex-direction:column;gap:5px;min-width:0}
+.overview-filter span{font-size:11px;color:var(--muted);font-weight:750}
+.overview-filter select{width:100%;min-height:42px;border:1px solid var(--soft);border-radius:11px;background:var(--bg);color:var(--text);padding:8px 10px;font-weight:750}
+.overview-filter-summary{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;color:var(--muted);font-size:11px;line-height:1.35}
+.overview-filter-summary b{color:var(--text);font-variant-numeric:tabular-nums}
+.overview-color-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;font-size:10px;color:var(--muted)}
+.overview-color-legend span{display:inline-flex;align-items:center;gap:5px}.overview-dot{width:10px;height:10px;border-radius:3px;border:1px solid color-mix(in srgb,var(--soft) 75%,transparent)}
+.overview-dot.done{background:color-mix(in srgb,var(--ok) 28%,var(--sheet))}.overview-dot.open{background:color-mix(in srgb,#e89b2d 28%,var(--sheet))}.overview-dot.na{background:color-mix(in srgb,var(--soft) 50%,var(--sheet))}
+body.overview-section #clearSel,body.overview-section #reportOpen,body.overview-section #planEditToggle{display:none!important}
+body.overview-section .selection-actions{display:none!important}
+body.overview-section .statusbar>span:nth-child(1),body.overview-section .statusbar>span:nth-child(2){display:none}
+body.overview-section .opening{cursor:default}
+body.overview-section.overview-step-active .opening.overview-done rect.field{fill:color-mix(in srgb,var(--ok) 26%,var(--sheet))!important;stroke:color-mix(in srgb,var(--ok) 72%,var(--line))!important}
+body.overview-section.overview-step-active .opening.overview-open rect.field{fill:color-mix(in srgb,#e89b2d 24%,var(--sheet))!important;stroke:color-mix(in srgb,#b96f12 72%,var(--line))!important}
+body.overview-section.overview-step-active .opening.overview-na rect.field{fill:color-mix(in srgb,var(--soft) 42%,var(--sheet))!important;stroke:color-mix(in srgb,var(--soft) 85%,var(--line))!important}
+body.overview-section .opening.overview-muted{opacity:.16}
+body.overview-section .opening.overview-muted text{opacity:.65}
+.app-dock{position:fixed;left:0;right:0;bottom:0;z-index:34;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 10px calc(8px + env(safe-area-inset-bottom));background:var(--sheet);border-top:1px solid var(--soft);box-shadow:0 -8px 24px rgba(0,0,0,.10)}
+.app-dock button{display:flex;align-items:center;justify-content:center;gap:9px;min-height:58px;border:1px solid var(--soft);border-radius:15px;background:var(--bg);color:var(--text);font-weight:800;padding:8px 10px}
+.app-dock button.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--sheet));color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+.app-dock-icon{font-size:20px;line-height:1}.app-dock-text{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05}.app-dock-text small{font-size:10px;font-weight:700;color:var(--muted);margin-top:3px}.app-dock button.active .app-dock-text small{color:color-mix(in srgb,var(--accent) 72%,var(--muted))}
+@media(max-width:420px){.overview-filter-grid{grid-template-columns:1fr}.app-dock button{min-height:56px}.app-dock-text{font-size:13px}}
+
 </style>
 </head>
 <body>
 <header class="app-header">
   <div class="header-top">
-    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.9.2</span></div><div class="project-title" id="modeTitle">Fenster dicht</div><div class="house-progress" id="houseProgress" aria-label="Fortschritt Haus C"><span><b id="houseDichtPct">0 %</b><small>dicht</small></span><span><b id="houseTotalPct">0 %</b><small>gesamt</small></span></div></div>
+    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.10.0</span></div><div class="project-title" id="modeTitle">Fenster dicht</div><div class="house-progress" id="houseProgress" aria-label="Fortschritt Haus C"><span><b id="houseDichtPct">0 %</b><small>dicht</small></span><span><b id="houseTotalPct">0 %</b><small>gesamt</small></span></div></div>
     <button class="pill" id="fitBtn" type="button">Einpassen</button>
   </div>
   <div class="facade-nav">
@@ -309,6 +338,14 @@ body.plan-edit-mode .window-part{cursor:crosshair}
 </header>
 <div class="sync-strip" id="syncStrip" role="status" aria-live="polite"><strong id="syncText">Supabase: Anmeldung erforderlich</strong><span id="syncUser"></span><button type="button" id="syncImport" hidden>Lokale Daten übernehmen</button><button type="button" id="syncRefresh" hidden>Neu laden</button><button type="button" id="syncLogout" hidden>Abmelden</button></div>
 <div class="statusbar"><span><b id="selectedCount">0</b> ausgewählt</span><span>·</span><span id="objectCountWrap"><b id="openingCount">0</b> Rohbauöffnungen</span></div>
+<section class="overview-controls" id="overviewControls" aria-label="Übersichtsfilter">
+  <div class="overview-filter-grid">
+    <label class="overview-filter"><span>Arbeitsschritt</span><select id="overviewStep"><option value="all">Gesamtübersicht</option></select></label>
+    <label class="overview-filter"><span>Anzeige</span><select id="overviewStatus"><option value="all">Alle</option><option value="open">Nur offen</option><option value="done">Nur fertig</option><option value="na">Nicht zutreffend</option></select></label>
+  </div>
+  <div class="overview-filter-summary"><span id="overviewFilterLabel">Gesamtübersicht</span><span><b id="overviewMatchCount">0</b> von <b id="overviewTotalCount">0</b> sichtbar</span></div>
+  <div class="overview-color-legend" id="overviewColorLegend"><span><i class="overview-dot done"></i>fertig</span><span><i class="overview-dot open"></i>offen</span><span><i class="overview-dot na"></i>nicht zutreffend</span></div>
+</section>
 <main class="viewer-shell"><div class="viewer" id="viewer"><div class="stage" id="stage"><svg id="facade" viewBox="16 45 780 468" role="img" aria-label="Fassadenansicht Rohbauöffnungen"><g id="outlineLayer"></g><g id="passiveLayer"></g><g id="labelLayer"></g><g id="openings"></g><g id="windowLayer"></g></svg></div></div></main>
 <section class="legend" id="modeLegend" aria-label="Legende der Abkürzungen">
   <h2>Legende · Abkürzungen</h2>
@@ -395,6 +432,10 @@ body.plan-edit-mode .window-part{cursor:crosshair}
   <a id="photoDownload" class="photo-download" href="#" download="GymSued_Foto.jpg">Bild als Datei laden</a>
   <p class="photo-help">iPhone: „Teilen / In Fotos sichern“ → im Teilen-Menü „Bild sichern“. Falls nicht angeboten: Bildvorschau gedrückt halten → „In Fotos sichern“. Alternativ wird die Datei in „Downloads“ gespeichert.</p>
 </section>
+<nav class="app-dock" id="appDock" aria-label="App-Bereiche">
+  <button type="button" id="dockOverview" class="active" aria-current="page"><span class="app-dock-icon">◫</span><span class="app-dock-text">Übersicht<small>Arbeitsstände filtern</small></span></button>
+  <button type="button" id="dockQs"><span class="app-dock-icon">▤</span><span class="app-dock-text">Fassaden &amp; QS<small>Stände bearbeiten</small></span></button>
+</nav>
 <div class="auth-overlay" id="authOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitle">
   <form class="auth-card" id="authForm">
     <h1 id="authTitle">GymSüd · Anmeldung</h1>
@@ -834,10 +875,10 @@ function planViewKeyForPart(part){
   const band=effectiveWindowBands.find(b=>b.parts.some(p=>p.id===part?.id));
   return band?.view||currentView;
 }
-const APP_VERSION = '0.9.2'; // Workflow Fenster dicht / Fassade + Prozent-Sammelfelder.
+const APP_VERSION = '0.10.0'; // Workflow Fenster dicht / Fassade + Prozent-Sammelfelder.
 const DICHT_STEP_DEFS = [
   {key:'uk_bottom',label:'UK unten',abbr:'UK u.'},
-  {key:'uk_top',label:'UK oben',abbr:'UK o.'},
+  {key:'uk_top',label:'UK umlaufend',abbr:'UK uml.'},
   {key:'sheet_mw',label:'Blech + MiWo (Rohbau)',abbr:'B+MW'},
   {key:'cable_drill',label:'Bohrung (SoSchu-Kabel)',abbr:'Bohr.'},
   {key:'cable_seal',label:'Kabeldurchführung + Dichtmanschette',abbr:'KD+DM'},
@@ -857,7 +898,7 @@ const windowStepNames = FACADE_WINDOW_STEP_DEFS.map(x=>x.key);
 const panelStepNames = FACADE_PANEL_STEP_DEFS.map(x=>x.key);
 const STEP_DEF_BY_KEY = new Map([...DICHT_STEP_DEFS,...FACADE_WINDOW_STEP_DEFS,...FACADE_PANEL_STEP_DEFS].map(x=>[x.key,x]));
 const LEGACY_STEP_KEYS = {
-  rohbau:{'UK unten':'uk_bottom','UK oben':'uk_top','Blendblech':'sheet_mw','Kabelloch':'cable_drill','Kabeldurchführung':'cable_seal','Fensterrahmen':'window_element','Baukörperanschluss (Dämmung etc.)':'body_connection'},
+  rohbau:{'UK unten':'uk_bottom','UK oben':'uk_top','UK umlaufend':'uk_top','Blendblech':'sheet_mw','Kabelloch':'cable_drill','Kabeldurchführung':'cable_seal','Fensterrahmen':'window_element','Baukörperanschluss (Dämmung etc.)':'body_connection'},
   fenster:{'Sonnenschutz':'sunshade','Außenseitige Verblechung':'outer_sheet'}
 };
 const AGGREGATE_ROUGH_WEIGHTS = {'C-W-TRH-01':8,'C-W-TRH-02':8,'C-W-EG-01':12,'C-W-EG-02':13,'C-O-TRH-01':8,'C-O-EG-01':28,'A-NO-TRH-01':7,'A-NO-EG-01':12,'A-NO-EG-05':9,'A-SW-TRH-01':7,'A-SW-TRH-02':7,'A-SW-EG-01':26,'B-NW-TRH-01':6,'B-NW-EG-01':26,'B-SO-TRH-01':6,'B-SO-EG-01':11,'B-SO-EG-02':11};
@@ -873,6 +914,9 @@ const CANONICAL_LEVELS = [["5.OG", 43, 153], ["4.OG", 43, 213], ["3.OG", 43, 273
 const WINDOW_KEY = 'gymsued-c-west-fenster-v1';
 const windowStore = JSON.parse(localStorage.getItem(WINDOW_KEY)||'{}');
 let currentMode = 'rohbau';
+let appSection = 'overview';
+let overviewStepKey = 'all';
+let overviewStatusFilter = 'all';
 const windowLayer=document.getElementById('windowLayer');
 rebuildPlanGeometry();
 const windowByBand=new Map(windowBands.map(b=>[b.id,b]));
@@ -1036,6 +1080,65 @@ function visibleRect(g){
   const my0 = mapY(y0), my1 = mapY(y1);
   return {x:g.x,y:Math.min(my0,my1),w:g.w,h:Math.abs(my1-my0)};
 }
+function overviewItemStatus(item){
+  const mode=currentMode;
+  const keys=activeStepNamesFor(item);
+  if(overviewStepKey==='all'){
+    if(mode==='rohbau') return dichtProgressFor(item.id)>=100?'done':'open';
+    if(!keys.length) return 'na';
+    const vals=keys.map(key=>rawStepFor(mode,item.id,key));
+    const applicable=vals.filter(v=>v!=='na');
+    if(!applicable.length) return 'na';
+    return applicable.every(v=>v>=100)?'done':'open';
+  }
+  if(!keys.includes(overviewStepKey)) return 'na';
+  const raw=rawStepFor(mode,item.id,overviewStepKey);
+  if(raw==='na') return 'na';
+  return raw>=100?'done':'open';
+}
+function overviewItemPercent(item){
+  if(overviewStepKey==='all') return currentMode==='rohbau'?dichtProgressFor(item.id):technicalProgressFor('fenster',item.id,activeStepNamesFor(item));
+  if(!activeStepNamesFor(item).includes(overviewStepKey)) return null;
+  return stepPercentFor(currentMode,item.id,overviewStepKey);
+}
+function applyOverviewClass(el,item){
+  if(appSection!=='overview')return;
+  const status=overviewItemStatus(item);
+  el.classList.add('overview-'+status);
+  if(overviewStatusFilter!=='all'&&overviewStatusFilter!==status)el.classList.add('overview-muted');
+}
+function overviewStepOptions(){
+  const select=document.getElementById('overviewStep');if(!select)return;
+  const available=currentMode==='rohbau'?stepNames:[...new Set(currentWindowParts().flatMap(p=>activeStepNamesFor(p)))];
+  if(overviewStepKey!=='all'&&!available.includes(overviewStepKey))overviewStepKey='all';
+  select.innerHTML='<option value="all">Gesamtübersicht</option>'+available.map(key=>`<option value="${key}">${stepLabel(key)}</option>`).join('');
+  select.value=overviewStepKey;
+}
+function updateOverviewSummary(){
+  const items=currentMode==='rohbau'?currentGeometry():currentWindowParts();
+  const total=items.length;
+  const match=items.filter(item=>overviewStatusFilter==='all'||overviewItemStatus(item)===overviewStatusFilter).length;
+  const totalEl=document.getElementById('overviewTotalCount'),matchEl=document.getElementById('overviewMatchCount'),lab=document.getElementById('overviewFilterLabel');
+  if(totalEl)totalEl.textContent=total;if(matchEl)matchEl.textContent=match;
+  if(lab)lab.textContent=overviewStepKey==='all'?'Gesamtübersicht':stepLabel(overviewStepKey);
+  document.body.classList.toggle('overview-step-active',appSection==='overview'&&overviewStepKey!=='all');
+  const legend=document.getElementById('overviewColorLegend');if(legend)legend.style.display=overviewStepKey==='all'?'none':'flex';
+}
+function updateSectionUI(){
+  const isOverview=appSection==='overview';
+  document.body.classList.toggle('overview-section',isOverview);
+  document.body.classList.toggle('qs-section',!isOverview);
+  const a=document.getElementById('dockOverview'),b=document.getElementById('dockQs');
+  if(a){a.classList.toggle('active',isOverview);a.setAttribute('aria-current',isOverview?'page':'false');}
+  if(b){b.classList.toggle('active',!isOverview);b.setAttribute('aria-current',!isOverview?'page':'false');}
+  if(isOverview){selected.clear();planEditMode=false;closeSheet();closeBulkSheet();closePlanEdit();}
+  overviewStepOptions();updateOverviewSummary();
+}
+function switchSection(section){
+  if(section===appSection)return;
+  appSection=section==='qs'?'qs':'overview';
+  updateSectionUI();renderOpenings();renderWindowBands();updateSelectionUI();
+}
 function renderStatic(){
   const cfg = currentStaticCfg();
   svg.setAttribute('viewBox', cfg.viewBox);
@@ -1050,6 +1153,7 @@ function renderStatic(){
   document.getElementById('objectCountWrap').lastChild.textContent = currentMode==='fenster'?' Fassadenbauteile':' Öffnungen';
   document.getElementById('roughMode').classList.toggle('active',currentMode==='rohbau');
   document.getElementById('windowMode').classList.toggle('active',currentMode==='fenster');
+  overviewStepOptions();updateOverviewSummary();
   const facadeAvailable=currentWindowBands().length>0;
   document.getElementById('windowMode').disabled = !facadeAvailable;
   document.getElementById('windowMode').title = facadeAvailable?'':'Fassadenbauteile für diese Ansicht folgen.';
@@ -1162,6 +1266,7 @@ function installGestures(el,id){
   const cancel=()=>{clearTimeout(timer);timer=null;pendingFieldPresses.delete(cancel);moved=true;};
   const down=e=>{
     if((e.button!==undefined&&e.button!==0)||pinchActive||suppressFieldGesture||modalLocked)return;
+    if(appSection==='overview')return;
     sx=e.clientX;sy=e.clientY;moved=false;longFired=false;
     if(planEditMode&&currentMode==='fenster'){startedInSelection=false;return;}
     startedInSelection=selected.size>0;
@@ -1185,6 +1290,7 @@ function installGestures(el,id){
   };
   const move=e=>{if(Math.hypot(e.clientX-sx,e.clientY-sy)>10)cancel();};
   const up=()=>{
+    if(appSection==='overview')return;
     clearTimeout(timer);timer=null;pendingFieldPresses.delete(cancel);
     if(longFired){clearAccidentalSelection();return;}
     if(moved||pinchActive||suppressFieldGesture||modalLocked)return;
@@ -1220,6 +1326,7 @@ function renderWindowBands(){
       el.dataset.total=100;
       el.dataset.complete=(total>0 && prog>=100)?'1':'0';
       if(selected.has(p.id))el.classList.add('selected');
+      applyOverviewClass(el,p);
       const yy=mapY(p.y+p.dy);
       const partHeight=Math.abs(mapY(p.y+p.dy+p.h)-yy);
       const attrs={class:'field',x:p.x,y:yy,width:p.w,height:partHeight,rx:.25};
@@ -1243,7 +1350,8 @@ function renderWindowBands(){
         labelClip.appendChild(typeLabel);
         el.appendChild(labelClip);
       }
-      if(prog>0){ const barH=Math.min(3.1, Math.max(2.25, partHeight*0.12)); el.appendChild(makeSvg('rect',{class:'progress',x:p.x,y:yy+partHeight-barH,width:p.w*(prog/100),height:barH})); }
+      const overviewVisualP=(appSection==='overview'&&overviewStepKey!=='all')?overviewItemPercent(p):prog;
+      if(overviewVisualP!=null&&overviewVisualP>0){ const barH=Math.min(3.1, Math.max(2.25, partHeight*0.12)); el.appendChild(makeSvg('rect',{class:'progress',x:p.x,y:yy+partHeight-barH,width:p.w*(overviewVisualP/100),height:barH})); }
       installGestures(el,p.id);
       group.appendChild(el);
     });
@@ -1261,6 +1369,7 @@ function renderOpenings(){
     el.dataset.total = 100;
     el.dataset.complete = dichtP>=100 ? '1' : '0';
     if(selected.has(g.id)) el.classList.add('selected');
+    applyOverviewClass(el,g);
     const vr = visibleRect(g);
     el.appendChild(makeSvg('rect',{class:'field',x:vr.x,y:vr.y,width:vr.w,height:vr.h,rx:0.5}));
     const cx = vr.x + vr.w/2, cy = vr.y + vr.h/2;
@@ -1274,10 +1383,11 @@ function renderOpenings(){
     txt.style.fontSize = fs + 'px';
     el.appendChild(txt);
     if(isAggregateRough(g)){
-      const pt=makeText(cx,cy+Math.min(9,vr.h*.22),Math.round(dichtP)+'%','aggregate-percent');
+      const aggregateDisplay=(appSection==='overview'&&overviewStepKey!=='all')?overviewItemPercent(g):dichtP;
+      const pt=makeText(cx,cy+Math.min(9,vr.h*.22),Math.round(aggregateDisplay==null?0:aggregateDisplay)+'%','aggregate-percent');
       pt.style.fontSize=(vr.w<25?'3.6px':'4.3px');el.appendChild(pt);
     }
-    const visualP=isAggregateRough(g)?dichtP:p;
+    const visualP=(appSection==='overview'&&overviewStepKey!=='all')?(overviewItemPercent(g)??0):(isAggregateRough(g)?dichtP:p);
     if(visualP>0){ const barH=Math.min(3.2, Math.max(2.35, vr.h*0.11)); el.appendChild(makeSvg('rect',{class:'progress',x:vr.x,y:vr.y+vr.h-barH,width:vr.w*(visualP/100),height:barH})); }
     installGestures(el,g.id);
     openings.appendChild(el);
@@ -1287,7 +1397,7 @@ function renderOpenings(){
 function render(){ renderStatic(); renderOpenings(); renderWindowBands(); updateHouseProgress(); }
 function toggleSelect(id){ selected.has(id) ? selected.delete(id) : selected.add(id); renderOpenings();renderWindowBands(); }
 function clearSelection(){ selected.clear(); renderOpenings();renderWindowBands(); }
-function updateSelectionUI(){ document.getElementById('selectedCount').textContent = selected.size; document.getElementById('selectionBar').classList.toggle('show', selected.size > 0); document.body.classList.toggle('has-selection', selected.size > 0); }
+function updateSelectionUI(){ const active=appSection!=='overview'&&selected.size>0; document.getElementById('selectedCount').textContent = selected.size; document.getElementById('selectionBar').classList.toggle('show', active); document.body.classList.toggle('has-selection', active); }
 function findGeom(id){ return currentMode==='fenster'?windowById.get(id):Object.values(views).flatMap(v=>v.geometry).find(x=>x.id===id); }
 /* Modal isolation: stop the document AND the inertial SVG scroller behind a sheet.
    Remember the page position so dismissing the sheet never jumps the facade. */
@@ -1992,7 +2102,12 @@ document.querySelectorAll('#viewMenu .nav-option[data-view]').forEach(btn=>btn.o
 function switchMode(mode){if(currentMode===mode)return;if(mode==='fenster'&&!currentWindowBands().length)return;if(mode!=='fenster')planEditMode=false;currentMode=mode;selected.clear();closeSheet();closeBulkSheet();closePlanEdit();if(document.getElementById('reportSheet')?.classList.contains('show'))closeReport();render();}
 document.getElementById('roughMode').onclick=()=>switchMode('rohbau');
 document.getElementById('windowMode').onclick=()=>switchMode('fenster');
+document.getElementById('overviewStep').addEventListener('change',e=>{overviewStepKey=e.target.value;updateOverviewSummary();renderOpenings();renderWindowBands();});
+document.getElementById('overviewStatus').addEventListener('change',e=>{overviewStatusFilter=e.target.value;updateOverviewSummary();renderOpenings();renderWindowBands();});
+document.getElementById('dockOverview').onclick=()=>switchSection('overview');
+document.getElementById('dockQs').onclick=()=>switchSection('qs');
 window.addEventListener('resize',()=>{});
+updateSectionUI();
 render();
 scale=Math.max(.55, Math.min(1, (viewer.clientWidth-2)/(views.west.baseWidth || 1180)));
 applyScale();
