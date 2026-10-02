@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1d1f22">
-<meta name="gym-sued-version" content="0.10.0">
+<meta name="gym-sued-version" content="0.10.1">
 <title>GymSüd · Fassaden-QS</title>
 <script>
 /* iOS WebKit sticky-header rasterization workaround, applied before first paint. */
@@ -27,7 +27,7 @@ if(/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacInt
 }
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--text);overscroll-behavior:none}
-body{user-select:none;padding-bottom:calc(92px + env(safe-area-inset-bottom))}
+body{user-select:none;padding-bottom:calc(108px + env(safe-area-inset-bottom))}
 button,input,textarea{font:inherit}
 /* Do not render page content behind the iOS status bar. viewport-fit=contain
    lets Safari own its top inset rather than applying its scroll-edge blur to our header. */
@@ -312,18 +312,18 @@ body.overview-section.overview-step-active .opening.overview-open rect.field{fil
 body.overview-section.overview-step-active .opening.overview-na rect.field{fill:color-mix(in srgb,var(--soft) 42%,var(--sheet))!important;stroke:color-mix(in srgb,var(--soft) 85%,var(--line))!important}
 body.overview-section .opening.overview-muted{opacity:.16}
 body.overview-section .opening.overview-muted text{opacity:.65}
-.app-dock{position:fixed;left:0;right:0;bottom:0;z-index:34;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 10px calc(8px + env(safe-area-inset-bottom));background:var(--sheet);border-top:1px solid var(--soft);box-shadow:0 -8px 24px rgba(0,0,0,.10)}
-.app-dock button{display:flex;align-items:center;justify-content:center;gap:9px;min-height:58px;border:1px solid var(--soft);border-radius:15px;background:var(--bg);color:var(--text);font-weight:800;padding:8px 10px}
+.app-dock{position:fixed;left:0;right:0;bottom:0;z-index:34;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:8px 10px calc(18px + env(safe-area-inset-bottom));background:var(--sheet);border-top:1px solid var(--soft);box-shadow:0 -8px 24px rgba(0,0,0,.10)}
+.app-dock button{display:flex;align-items:center;justify-content:center;gap:9px;min-height:54px;border:1px solid var(--soft);border-radius:15px;background:var(--bg);color:var(--text);font-weight:800;padding:8px 10px}
 .app-dock button.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,var(--sheet));color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 .app-dock-icon{font-size:20px;line-height:1}.app-dock-text{display:flex;flex-direction:column;align-items:flex-start;line-height:1.05}.app-dock-text small{font-size:10px;font-weight:700;color:var(--muted);margin-top:3px}.app-dock button.active .app-dock-text small{color:color-mix(in srgb,var(--accent) 72%,var(--muted))}
-@media(max-width:420px){.overview-filter-grid{grid-template-columns:1fr}.app-dock button{min-height:56px}.app-dock-text{font-size:13px}}
+@media(max-width:420px){.overview-filter-grid{grid-template-columns:1fr}.app-dock{padding-bottom:calc(20px + env(safe-area-inset-bottom))}.app-dock button{min-height:52px}.app-dock-text{font-size:13px}}
 
 </style>
 </head>
 <body>
 <header class="app-header">
   <div class="header-top">
-    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.10.0</span></div><div class="project-title" id="modeTitle">Fenster dicht</div><div class="house-progress" id="houseProgress" aria-label="Fortschritt Haus C"><span><b id="houseDichtPct">0 %</b><small>dicht</small></span><span><b id="houseTotalPct">0 %</b><small>gesamt</small></span></div></div>
+    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.10.1</span></div><div class="project-title" id="modeTitle">Fenster dicht</div><div class="house-progress" id="houseProgress" aria-label="Fortschritt Haus C"><span><b id="houseDichtPct">0 %</b><small>dicht</small></span><span><b id="houseTotalPct">0 %</b><small>gesamt</small></span></div></div>
     <button class="pill" id="fitBtn" type="button">Einpassen</button>
   </div>
   <div class="facade-nav">
@@ -877,7 +877,7 @@ function planViewKeyForPart(part){
   const band=effectiveWindowBands.find(b=>b.parts.some(p=>p.id===part?.id));
   return band?.view||currentView;
 }
-const APP_VERSION = '0.10.0'; // Workflow Fenster dicht / Fassade + Prozent-Sammelfelder.
+const APP_VERSION = '0.10.1'; // Workflow Fenster dicht / Fassade + Prozent-Sammelfelder.
 const DICHT_STEP_DEFS = [
   {key:'uk_bottom',label:'UK unten',abbr:'UK u.'},
   {key:'uk_top',label:'UK umlaufend',abbr:'UK uml.'},
