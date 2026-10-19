@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1d1f22">
-<meta name="gym-sued-version" content="0.10.2">
+<meta name="gym-sued-version" content="0.10.3">
 <title>GymSüd · Fassaden-QS</title>
 <script>
 /* iOS WebKit sticky-header rasterization workaround, applied before first paint. */
@@ -323,7 +323,7 @@ body.overview-section .opening.overview-muted text{opacity:.65}
 <body>
 <header class="app-header">
   <div class="header-top">
-    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.10.2</span></div><div class="project-title" id="modeTitle">Fenster dicht</div><div class="house-progress" id="houseProgress" aria-label="Fortschritt Haus C"><span><b id="houseDichtPct">0 %</b><small>dicht</small></span><span><b id="houseTotalPct">0 %</b><small>gesamt</small></span></div></div>
+    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.10.3</span></div><div class="project-title" id="modeTitle">Fenster dicht</div><div class="house-progress" id="houseProgress" aria-label="Fortschritt Haus C"><span><b id="houseDichtPct">0 %</b><small>dicht</small></span><span><b id="houseTotalPct">0 %</b><small>gesamt</small></span></div></div>
     <button class="pill" id="fitBtn" type="button">Einpassen</button>
   </div>
   <div class="facade-nav">
@@ -940,6 +940,124 @@ function buildASuedwestWindowBands(){
 }
 windowBands.push(...buildASuedwestWindowBands());
 
+function buildBNordwestWindowBands(){
+  const cfg=views['b-nordwest'];
+  if(!cfg) return [];
+  const out=[];
+  const byId=new Map(cfg.geometry.map(g=>[g.id,g]));
+  const panelColors={yellow:'#dbd9a8',green:'#abcba6',light:'#dae5e1',blue:'#9da3bb',vf:'#b4ae78'};
+  const panelDesc='Alu-Paneel, hinterlüftet · 40 × 217,5 cm';
+  const descFor=(type,code,dim)=>{
+    if(code==='DK/DK') return `Fensterelement [${type}] · ${dim} · 1 großes Dreh- / Kipp-Element · 1 kleines Dreh- / Kipp-Element · 1 durchgehende Glasbrüstung`;
+    if(code==='F/DK') return `Fensterelement [${type}] · ${dim} · 1 großes Fest-Element · 1 kleines Dreh- / Kipp-Element · 1 Glasbrüstung vor Dreh- / Kipp`;
+    if(code==='DK') return `Fensterelement [${type}] · ${dim} · Dreh- / Kipp mit Glasbrüstung`;
+    return `Fensterelement [${type}] · ${dim}`;
+  };
+  const rowGeom=level=>cfg.geometry.filter(g=>g.level===level&&g.kind==='window').sort((a,b)=>a.x-b.x);
+  const makeExactBand=(level,bandId,type,x,y,w,h,specs)=>{
+    const total=specs.reduce((s,p)=>s+p.u,0)||1;
+    let cx=x,winNo=0,panelNo=0;
+    const parts=[];
+    specs.forEach((spec,idx)=>{
+      const pw=idx===specs.length-1 ? x+w-cx : w*(spec.u/total);
+      if(spec.kind==='paneel'){
+        panelNo+=1;
+        parts.push({id:`${bandId}-P${String(panelNo).padStart(2,'0')}`,bandId,view:'b-nordwest',level,kind:'paneel',number:`P${String(panelNo).padStart(2,'0')}`,dim:'40 × 217,5 cm',description:panelDesc,elementCode:'P',x:cx,y,w:pw,h,dy:0,color:panelColors[spec.color]||panelColors.green});
+      }else{
+        winNo+=1;
+        const dim=`${String(spec.u).replace('.',',')} × 217,5 cm`;
+        const winType=spec.type||type;
+        const code=spec.code||'FE';
+        parts.push({id:`${bandId}-F${String(winNo).padStart(2,'0')}`,bandId,view:'b-nordwest',level,kind:'fenster',number:String(winNo).padStart(2,'0'),dim,description:descFor(winType,code,dim),elementCode:code,x:cx,y,w:pw,h,dy:0});
+      }
+      cx+=pw;
+    });
+    out.push({id:bandId,view:'b-nordwest',type,level,side:'',x,y,w,h,dy:0,parts});
+  };
+  const W=(u,code,type)=>({kind:'fenster',u,code,type});
+  const P=(color)=>({kind:'paneel',u:40,color});
+  const leftSpecs=[W(200,'DK/DK'),P('yellow'),W(200,'F/DK'),P('green'),W(200,'F/DK'),P('blue'),W(200,'DK/DK'),P('green'),W(80,'DK'),P('light'),W(80,'DK'),P('yellow'),W(200,'DK/DK')];
+  const midSpecs=[W(80,'DK'),P('yellow'),W(200,'F/DK'),P('green'),W(200,'F/DK'),P('blue'),W(200,'F/DK'),P('green'),W(200,'F/DK'),P('yellow'),W(200,'F/DK'),P('green'),W(200,'F/DK'),P('blue'),W(200,'F/DK'),P('green'),W(200,'F/DK'),P('yellow'),W(80,'DK')];
+  const rightStandard=[W(200,'F/DK'),P('yellow'),W(80,'DK'),P('light'),W(80,'DK'),P('green'),W(200,'DK/DK'),P('blue'),W(200,'F/DK'),P('green'),W(200,'F/DK'),P('yellow'),W(200,'DK/DK')];
+  const right3=[W(200,'F/DK','FB.2.2 B'),P('yellow'),W(200,'F/DK','FB.2.2 B'),P('green'),W(200,'DK/DK','FB.2.1 B'),P('blue'),W(200,'F/DK','FB.2.1 B'),P('green'),W(200,'F/DK','FB.2.1 B'),P('yellow'),W(200,'DK/DK','FB.2.1 B')];
+  const right2=[W(200,'F/DK','FB.2.3 B'),P('yellow'),W(200,'F/DK','FB.2.3 B'),P('green'),W(200,'F/DK','FB.2.3 B'),P('blue'),W(200,'F/DK','FB.2.3 B'),P('green'),W(200,'F/DK','FB.2.3 B'),P('yellow'),W(200,'F/DK','FB.2.3 B')];
+  const right1=[W(200,'F/DK','FB.2.4 B'),P('yellow'),W(80,'DK','FB.2.4 B'),P('light'),W(80,'DK','FB.2.4 B'),P('green'),W(200,'F/DK','FB.2.4 B'),P('blue'),W(200,'F/DK','FB.2.4 B'),P('green'),W(80,'DK','FB.2.4 B'),P('light'),W(80,'DK','FB.2.4 B'),P('yellow'),W(200,'F/DK','FB.2.4 B')];
+  ['5OG','4OG','3OG','2OG','1OG'].forEach(level=>{
+    const row=rowGeom(level); if(!row.length)return;
+    const y=row[0].y,h=row[0].h;
+    const l0=row[0].x,l1=row.find(g=>Number(g.label||0)===7); const lw=(l1?l1.x+l1.w:row[6].x+row[6].w)-l0;
+    const m0=row.find(g=>Number(g.label||0)===8)||row[7]; const m1=row.find(g=>Number(g.label||0)===17)||row[16]; const mw=m1.x+m1.w-m0.x;
+    const r0=row.find(g=>Number(g.label||0)===18)||row[row.length-1]; const rx=523.68, rw=692.52-rx;
+    makeExactBand(level,`B-NW-${level}-FB2_1B-L`,'FB.2.1 B',l0,y,lw,h,leftSpecs);
+    makeExactBand(level,`B-NW-${level}-FB2_9`,'FB.2.9',m0.x,y,mw,h,midSpecs);
+    if(level==='3OG')makeExactBand(level,`B-NW-${level}-FB2_2B-R`,'FB.2.2 B / FB.2.1 B',rx,y,rw,h,right3);
+    else if(level==='2OG')makeExactBand(level,`B-NW-${level}-FB2_3B-R`,'FB.2.3 B',rx,y,rw,h,right2);
+    else if(level==='1OG')makeExactBand(level,`B-NW-${level}-FB2_4B-R`,'FB.2.4 B',rx,y,rw,h,right1);
+    else makeExactBand(level,`B-NW-${level}-FB2_1B-R`,'FB.2.1 B',rx,y,rw,h,rightStandard);
+  });
+
+  const vf=byId.get('B-NW-TRH-01');
+  if(vf){
+    const units=[
+      {kind:'fenster',id:'TOP',u:86,dim:'129 × 86 cm',desc:'Festelement [VF.3.2]',code:'F',level:'TRH'},
+      {kind:'paneel',id:'P01',u:45,dim:'129 × 45 cm',desc:'Alu-Paneel, hinterlüftet · 129 × 45 cm',code:'P',level:'5OG'},
+      {kind:'fenster',id:'5OG',u:284.5,dim:'129 × 284,5 cm',desc:'Fensterelement mit Unterlicht [VF.3.2] · Festfeld unten · Dreh- / Kipp-Element oben',code:'DK/UL',level:'5OG'},
+      {kind:'paneel',id:'P02',u:45,dim:'129 × 45 cm',desc:'Alu-Paneel, hinterlüftet · 129 × 45 cm',code:'P',level:'4OG'},
+      {kind:'fenster',id:'4OG',u:284.5,dim:'129 × 284,5 cm',desc:'Fensterelement mit Unterlicht [VF.3.2] · Festfeld unten · Dreh- / Kipp-Element oben',code:'DK/UL',level:'4OG'},
+      {kind:'paneel',id:'P03',u:45,dim:'129 × 45 cm',desc:'Alu-Paneel, hinterlüftet · 129 × 45 cm',code:'P',level:'3OG'},
+      {kind:'fenster',id:'3OG',u:284.5,dim:'129 × 284,5 cm',desc:'Fensterelement mit Unterlicht [VF.3.2] · Festfeld unten · Dreh- / Kipp-Element oben',code:'DK/UL',level:'3OG'},
+      {kind:'paneel',id:'P04',u:45,dim:'129 × 45 cm',desc:'Alu-Paneel, hinterlüftet · 129 × 45 cm',code:'P',level:'2OG'},
+      {kind:'fenster',id:'2OG',u:284.5,dim:'129 × 284,5 cm',desc:'Fensterelement mit Unterlicht [VF.3.2] · Festfeld unten · Dreh- / Kipp-Element oben',code:'DK/UL',level:'2OG'},
+      {kind:'paneel',id:'P05',u:45,dim:'129 × 45 cm',desc:'Alu-Paneel, hinterlüftet · 129 × 45 cm',code:'P',level:'1OG'},
+      {kind:'fenster',id:'1OG',u:301,dim:'129 × 301 cm',desc:'Fensterelement mit Unterlicht [VF.3.2] · Festfeld unten · Dreh- / Kipp-Element oben',code:'DK/UL',level:'1OG'},
+      {kind:'paneel',id:'P06',u:45,dim:'129 × 45 cm',desc:'Alu-Paneel, hinterlüftet · 129 × 45 cm',code:'P',level:'EG'},
+      {kind:'fenster',id:'EG-DOOR',u:322,dim:'129 × 322 cm',desc:'Aluminium-Fassadentür mit Oberlicht · AL_B_0_013_1',code:'T/OL',level:'EG'}
+    ];
+    const total=units.reduce((s,a)=>s+a.u,0),scale=vf.h/total; let cy=vf.y;
+    const parts=units.map((u,idx)=>{const ph=idx===units.length-1?vf.y+vf.h-cy:u.u*scale;const part={id:`B-NW-VF32-${u.id}`,bandId:'B-NW-VF32',view:'b-nordwest',level:u.level,kind:u.kind,number:u.id,dim:u.dim,description:u.desc,elementCode:u.code,x:vf.x,y:cy,w:vf.w,h:ph,dy:0};if(u.kind==='paneel')part.color=panelColors.vf;cy+=ph;return part;});
+    out.push({id:'B-NW-VF32',view:'b-nordwest',type:'VF.3.2',level:'TRH',side:'rechts',x:vf.x,y:vf.y,w:vf.w,h:vf.h,dy:0,parts});
+  }
+
+  const eg=byId.get('B-NW-EG-01');
+  if(eg){
+    const egSpecs=[
+      [124.5,0],[117.5,1],[117.5,1],[117.5,0],[117.5,0],[117.5,1],[117.5,1],[117.5,0],[117.5,0],[117.5,1],[117.5,1],[118,0],[122.5,0],
+      [120,1],[120,1],[120,0],[120,0],[120,1],[120,1],[120,0],
+      [100,0],['door',0],[100,0],
+      [120,0],[120,1],[120,1],[120,0],[120,0],[120,1],[120,1],[120,0],[120,0],
+      [118,1],[118,1],[118,0],[118,0],[118,1],[118,1],[118,0],[118,0],[118,1],[118,1],[119,0]
+    ];
+    const widths=egSpecs.map(s=>s[0]==='door'?240:Number(s[0])); const total=widths.reduce((a,b)=>a+b,0); let cx=eg.x;
+    const parts=[],starts=[];
+    egSpecs.forEach((spec,idx)=>{
+      const u=widths[idx],pw=idx===egSpecs.length-1?eg.x+eg.w-cx:eg.w*(u/total); starts.push(cx);
+      const no=String(idx+1).padStart(2,'0');
+      if(spec[0]==='door'){
+        const olH=eg.h*(66/290); parts.push({id:'B-NW-EG-TUER-01',bandId:'B-NW-EG-FB.EG',view:'b-nordwest',level:'EG',kind:'fenster',number:no,dim:'240 × 224,5 cm',description:'Aluminium-Fassadentür · AL_B_0_004_1',elementCode:'T',x:cx,y:eg.y+olH,w:pw,h:eg.h-olH,dy:0});
+      }else{
+        const dimW=String(spec[0]).replace('.',','); const opening=!!spec[1];
+        const isDoorNeighbor=(idx===20||idx===22); const olH=isDoorNeighbor?eg.h*(66/290):0;
+        parts.push({id:`B-NW-EG-FB-${no}`,bandId:'B-NW-EG-FB.EG',view:'b-nordwest',level:'EG',kind:'fenster',number:no,dim:`${dimW} × ${isDoorNeighbor?'224,5':'290'} cm`,description:`FB.EG${opening?' · mit Öffnungselement':''}`,elementCode:opening?'FE':'F',x:cx,y:eg.y+olH,w:pw,h:eg.h-olH,dy:0});
+      }
+      cx+=pw;
+    });
+    const olStart=starts[20],olEnd=parts[22].x+parts[22].w;
+    parts.push({id:'B-NW-EG-OL-01',bandId:'B-NW-EG-FB.EG',view:'b-nordwest',level:'EG',kind:'fenster',number:'OL',dim:'440 × 66 cm',description:'FB.EG · gemeinsames Oberlicht über Fassadentür',elementCode:'OL',x:olStart,y:eg.y,w:olEnd-olStart,h:eg.h*(66/290),dy:0});
+    out.push({id:'B-NW-EG-FB.EG',view:'b-nordwest',type:'FB.EG',level:'EG',side:'',x:eg.x,y:eg.y,w:eg.w,h:eg.h,dy:0,parts});
+  }
+
+  cfg.geometry.filter(g=>g.level==='UG'&&g.kind==='window').sort((a,b)=>a.x-b.x).forEach((g,idx)=>{
+    const n=idx+1; let code,dim,desc;
+    if(n<=4||n>=12){code='F.3.3';dim='90 × 148,5 cm';desc='Lochfenster [F.3.3] · Dreh- / Kipp';}
+    else if(n<=8){code='F.3.1';dim='90 × 148,5 cm';desc='Lochfenster [F.3.1] · Dreh- / Kipp';}
+    else {code='F.3.2';dim='90 × 98 cm';desc='Lochfenster [F.3.2] · Dreh- / Kipp';}
+    const p={id:`B-NW-F-UG-${String(n).padStart(2,'0')}`,view:'b-nordwest',level:'UG',kind:'fenster',number:String(n).padStart(2,'0'),dim,description:desc,elementCode:code,x:g.x,y:g.y,w:g.w,h:g.h,dy:0};
+    out.push(makeIndividualWindowBand('b-nordwest',g,p));
+  });
+  return out;
+}
+windowBands.push(...buildBNordwestWindowBands());
+
 function baseWindowPartById(id){
   for(const band of windowBands){const hit=band.parts.find(p=>p.id===id);if(hit)return hit;}
   return null;
@@ -1004,7 +1122,7 @@ function planViewKeyForPart(part){
   const band=effectiveWindowBands.find(b=>b.parts.some(p=>p.id===part?.id));
   return band?.view||currentView;
 }
-const APP_VERSION = '0.10.2'; // Workflow Fenster dicht / Fassade + Prozent-Sammelfelder.
+const APP_VERSION = '0.10.3'; // Workflow Fenster dicht / Fassade + Prozent-Sammelfelder.
 const DICHT_STEP_DEFS = [
   {key:'uk_bottom',label:'UK unten',abbr:'UK u.'},
   {key:'uk_top',label:'UK umlaufend',abbr:'UK uml.'},
