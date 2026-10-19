@@ -1058,6 +1058,213 @@ function buildBNordwestWindowBands(){
 }
 windowBands.push(...buildBNordwestWindowBands());
 
+function buildBSuedostWindowBands(){
+  const cfg=views['b-suedost'];
+  if(!cfg) return [];
+  const out=[];
+  const byId=new Map(cfg.geometry.map(g=>[g.id,g]));
+  const panelColors={yellow:'#dbd9a8',green:'#abcba6',light:'#dae5e1',blue:'#9da3bb',brown:'#b4ae78'};
+  const panelLabel=h=>`Alu-Paneel hinterlüftet · ${h}`;
+  const descFor=(type,code,dim)=>{
+    if(code==='DK/DK') return `Fensterelement [${type}] · ${dim} · 1 großes Dreh- / Kipp-Element · 1 kleines Dreh- / Kipp-Element · 1 durchgehende Glasbrüstung`;
+    if(code==='F/DK') return `Fensterelement [${type}] · ${dim} · 1 großes Fest-Element · 1 kleines Dreh- / Kipp-Element · 1 Glasbrüstung vor Dreh- / Kipp`;
+    if(code==='DK') return `Fensterelement [${type}] · ${dim} · Dreh- / Kipp mit Glasbrüstung`;
+    if(code==='T/OL') return `Aluminium-Fassadentür mit Oberlicht · ${dim}`;
+    if(code==='T') return `Stahl-Fassadentür · ${dim}`;
+    return `Fensterelement [${type}] · ${dim}`;
+  };
+  const makeBand=(bandId,level,type,x,y,w,h,specs,side='')=>{
+    const total=specs.reduce((sum,s)=>sum+(s.u||0),0)||1;
+    let cx=x;
+    const parts=specs.map((s,idx)=>{
+      const pw=idx===specs.length-1 ? (x+w-cx) : w*((s.u||0)/total);
+      const part={id:`${bandId}-${String(idx+1).padStart(2,'0')}`,bandId,view:'b-suedost',level,kind:s.kind||'fenster',number:s.number||String(idx+1).padStart(2,'0'),dim:s.dim,description:s.description,elementCode:s.code||'FE',x:cx,y,w:pw,h,dy:0};
+      if(s.color) part.color=s.color;
+      cx+=pw;
+      return part;
+    });
+    out.push({id:bandId,view:'b-suedost',type,level,side,x,y,w,h,dy:0,parts});
+  };
+  const rowWindows=level=>cfg.geometry.filter(g=>g.level===level&&g.kind==='window').sort((a,b)=>a.x-b.x);
+  const bandRange=(row,startNo,endNo)=>{
+    const subset=row.filter(g=>{const n=Number(String(g.label||'').replace(/[^0-9]/g,''))||0; return n>=startNo&&n<=endNo;});
+    if(!subset.length) return null;
+    const x=Math.min(...subset.map(g=>g.x));
+    const y=Math.min(...subset.map(g=>g.y));
+    const w=Math.max(...subset.map(g=>g.x+g.w))-x;
+    const h=Math.max(...subset.map(g=>g.h));
+    return {x,y,w,h};
+  };
+  const ogLeftOuter=[
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.1.1 R','F/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.brown},
+    {u:90,dim:'90 × 217,5 cm',code:'DK',description:descFor('FB.1.1 R','DK','90 × 217,5 cm')}
+  ];
+  const ogRightOuter=[
+    {u:90,dim:'90 × 217,5 cm',code:'DK',description:descFor('FB.1.1 L','DK','90 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.brown},
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.1.1 L','F/DK','200 × 217,5 cm')}
+  ];
+  const ogLeftInner=[
+    {u:80,dim:'80 × 217,5 cm',code:'DK',description:descFor('FB.1.2 L','DK','80 × 217,5 cm')},
+    {u:30,kind:'paneel',dim:'30 × 217,5 cm',code:'P',description:panelLabel('30 × 217,5 cm'),color:panelColors.brown},
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.1.2 L','F/DK','200 × 217,5 cm')}
+  ];
+  const ogRightInner=[
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.1.2 R','F/DK','200 × 217,5 cm')},
+    {u:30,kind:'paneel',dim:'30 × 217,5 cm',code:'P',description:panelLabel('30 × 217,5 cm'),color:panelColors.brown},
+    {u:80,dim:'80 × 217,5 cm',code:'DK',description:descFor('FB.1.2 R','DK','80 × 217,5 cm')}
+  ];
+  const leftMainStandard=[
+    {u:200,dim:'200 × 217,5 cm',code:'DK/DK',description:descFor('FB.2.1 A','DK/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.blue},
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.2.1 A','F/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.green},
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.2.1 A','F/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.yellow},
+    {u:200,dim:'200 × 217,5 cm',code:'DK/DK',description:descFor('FB.2.1 A','DK/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.green},
+    {u:80,dim:'80 × 217,5 cm',code:'DK',description:descFor('FB.2.1 A','DK','80 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.light},
+    {u:80,dim:'80 × 217,5 cm',code:'DK',description:descFor('FB.2.1 A','DK','80 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.blue},
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.2.1 A','F/DK','200 × 217,5 cm')}
+  ];
+  const leftMainSpecial=[
+    {u:200,dim:'200 × 217,5 cm',code:'DK/DK',description:descFor('FB.2.1 A','DK/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.blue},
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.2.1 A','F/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.green},
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.2.1 A','F/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.yellow},
+    {u:200,dim:'200 × 217,5 cm',code:'DK/DK',description:descFor('FB.2.1 A','DK/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.green},
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.2.1 A','F/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.light},
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.2.1 A','F/DK','200 × 217,5 cm')}
+  ];
+  const rightMain=[
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.2.1 A','F/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.blue},
+    {u:80,dim:'80 × 217,5 cm',code:'DK',description:descFor('FB.2.1 A','DK','80 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.light},
+    {u:80,dim:'80 × 217,5 cm',code:'DK',description:descFor('FB.2.1 A','DK','80 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.green},
+    {u:200,dim:'200 × 217,5 cm',code:'DK/DK',description:descFor('FB.2.1 A','DK/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.yellow},
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.2.1 A','F/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.green},
+    {u:200,dim:'200 × 217,5 cm',code:'F/DK',description:descFor('FB.2.1 A','F/DK','200 × 217,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 217,5 cm',code:'P',description:panelLabel('40 × 217,5 cm'),color:panelColors.blue},
+    {u:200,dim:'200 × 217,5 cm',code:'DK/DK',description:descFor('FB.2.1 A','DK/DK','200 × 217,5 cm')}
+  ];
+
+  ['5OG','4OG','1OG'].forEach(level=>{
+    const row=rowWindows(level);
+    const leftOuter=bandRange(row,1,2), leftMain=bandRange(row,3,9), leftInner=bandRange(row,10,11), rightInner=bandRange(row,12,13), rightMainR=bandRange(row,14,20), rightOuter=bandRange(row,21,22);
+    if(leftOuter) makeBand(`B-SO-${level}-FB11R`,level,'FB.1.1 R',leftOuter.x,leftOuter.y,leftOuter.w,leftOuter.h,ogLeftOuter,'links');
+    if(leftMain) makeBand(`B-SO-${level}-FB21A-L`,level,'FB.2.1 A',leftMain.x,leftMain.y,leftMain.w,leftMain.h,leftMainStandard,'links');
+    if(leftInner) makeBand(`B-SO-${level}-FB12L`,level,'FB.1.2 L',leftInner.x,leftInner.y,leftInner.w,leftInner.h,ogLeftInner,'links');
+    if(rightInner) makeBand(`B-SO-${level}-FB12R`,level,'FB.1.2 R',rightInner.x,rightInner.y,rightInner.w,rightInner.h,ogRightInner,'rechts');
+    if(rightMainR) makeBand(`B-SO-${level}-FB21A-R`,level,'FB.2.1 A',rightMainR.x,rightMainR.y,rightMainR.w,rightMainR.h,rightMain,'rechts');
+    if(rightOuter) makeBand(`B-SO-${level}-FB11L`,level,'FB.1.1 L',rightOuter.x,rightOuter.y,rightOuter.w,rightOuter.h,ogRightOuter,'rechts');
+  });
+  ['3OG','2OG'].forEach(level=>{
+    const row=rowWindows(level);
+    const leftOuter=bandRange(row,1,2), leftMain=bandRange(row,3,8), leftInner=bandRange(row,9,10), rightInner=bandRange(row,11,12), rightMainR=bandRange(row,13,19), rightOuter=bandRange(row,20,21);
+    if(leftOuter) makeBand(`B-SO-${level}-FB11R`,level,'FB.1.1 R',leftOuter.x,leftOuter.y,leftOuter.w,leftOuter.h,ogLeftOuter,'links');
+    if(leftMain) makeBand(`B-SO-${level}-FB21A-L`,level,'FB.2.1 A',leftMain.x,leftMain.y,leftMain.w,leftMain.h,leftMainSpecial,'links');
+    if(leftInner) makeBand(`B-SO-${level}-FB12L`,level,'FB.1.2 L',leftInner.x,leftInner.y,leftInner.w,leftInner.h,ogLeftInner,'links');
+    if(rightInner) makeBand(`B-SO-${level}-FB12R`,level,'FB.1.2 R',rightInner.x,rightInner.y,rightInner.w,rightInner.h,ogRightInner,'rechts');
+    if(rightMainR) makeBand(`B-SO-${level}-FB21A-R`,level,'FB.2.1 A',rightMainR.x,rightMainR.y,rightMainR.w,rightMainR.h,rightMain,'rechts');
+    if(rightOuter) makeBand(`B-SO-${level}-FB11L`,level,'FB.1.1 L',rightOuter.x,rightOuter.y,rightOuter.w,rightOuter.h,ogRightOuter,'rechts');
+  });
+
+  const trh=byId.get('B-SO-TRH-01');
+  if(trh){
+    const trhParts=[
+      {kind:'fenster',level:'5OG',u:292,dim:'280 × 292 cm',description:'Fensterelement mit Unterlicht [VF.1.2] · Festfeld unten · 2 kleine Öffnungsflügel oben',code:'VF.1.2'},
+      {kind:'paneel',level:'5OG',u:30,dim:'280 × 30 cm',description:'Alu-Paneel hinterlüftet · 280 × 30 cm',code:'P',color:panelColors.brown},
+      {kind:'fenster',level:'4OG',u:285,dim:'280 × 285 cm',description:'Fensterelement mit Unterlicht [VF.1.2] · Festfeld unten · 2 kleine Öffnungsflügel oben',code:'VF.1.2'},
+      {kind:'paneel',level:'4OG',u:30,dim:'280 × 30 cm',description:'Alu-Paneel hinterlüftet · 280 × 30 cm',code:'P',color:panelColors.brown},
+      {kind:'fenster',level:'3OG',u:285,dim:'280 × 285 cm',description:'Fensterelement mit Unterlicht [VF.1.2] · Festfeld unten · 2 kleine Öffnungsflügel oben',code:'VF.1.2'},
+      {kind:'paneel',level:'3OG',u:30,dim:'280 × 30 cm',description:'Alu-Paneel hinterlüftet · 280 × 30 cm',code:'P',color:panelColors.brown},
+      {kind:'fenster',level:'2OG',u:288,dim:'280 × 288 cm',description:'Fensterelement mit Unterlicht [VF.1.2] · Festfeld unten · 2 kleine Öffnungsflügel oben',code:'VF.1.2'},
+      {kind:'paneel',level:'2OG',u:30,dim:'280 × 30 cm',description:'Alu-Paneel hinterlüftet · 280 × 30 cm',code:'P',color:panelColors.brown},
+      {kind:'fenster',level:'1OG',u:280,dim:'280 × 280 cm',description:'Fensterelement mit Unterlicht [VF.1.2] · Festfeld unten · 2 kleine Öffnungsflügel oben',code:'VF.1.2'},
+      {kind:'paneel',level:'1OG',u:30,dim:'280 × 30 cm',description:'Alu-Paneel hinterlüftet · 280 × 30 cm',code:'P',color:panelColors.brown},
+      {kind:'fenster',level:'EG',u:294,dim:'280 × 294 cm',description:'Fensterelement mit Unterlicht [VF.1.2] · Festfeld unten · 2 kleine Öffnungsflügel oben',code:'VF.1.2'},
+      {kind:'paneel',level:'EG',u:60,dim:'280 × 60 cm',description:'Alu-Paneel hinterlüftet · 280 × 60 cm',code:'P',color:panelColors.brown},
+      {kind:'fenster',level:'EG',u:317,dim:'280 × 317 cm',description:'Aluminium-Fassadentür mit Oberlicht · AL_B_0_011_1',code:'T/OL'}
+    ];
+    const total=trhParts.reduce((s,p)=>s+p.u,0)||1; let cy=trh.y;
+    const parts=trhParts.map((p,idx)=>{
+      const ph=idx===trhParts.length-1 ? (trh.y+trh.h-cy) : trh.h*(p.u/total);
+      const part={id:`B-SO-TRH-${String(idx+1).padStart(2,'0')}`,bandId:'B-SO-TRH-VF12',view:'b-suedost',level:p.level,kind:p.kind,number:p.kind==='paneel'?`P${String(idx+1).padStart(2,'0')}`:String(idx+1).padStart(2,'0'),dim:p.dim,description:p.description,elementCode:p.code,x:trh.x,y:cy,w:trh.w,h:ph,dy:0};
+      if(p.color) part.color=p.color; cy+=ph; return part;
+    });
+    out.push({id:'B-SO-TRH-VF12',view:'b-suedost',type:'VF.1.2',level:'TRH',side:'mitte',x:trh.x,y:trh.y,w:trh.w,h:trh.h,dy:0,parts});
+  }
+
+  const egLeft=byId.get('B-SO-EG-01');
+  if(egLeft){
+    const specs=[
+      {ratio:119.5,code:'F',description:'FB.EG',dim:'119,5 × 290 cm'},{ratio:119.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'119,5 × 290 cm'},{ratio:117.5,code:'F',description:'FB.EG',dim:'117,5 × 290 cm'},{ratio:101.5,code:'F',description:'FB.EG',dim:'101,5 × 290 cm'},{ratio:119.5,code:'F',description:'FB.EG',dim:'119,5 × 290 cm'},{ratio:119.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'119,5 × 290 cm'},{ratio:119.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'119,5 × 290 cm'},{ratio:119.5,code:'F',description:'FB.EG',dim:'119,5 × 290 cm'},{ratio:119.5,code:'F',description:'FB.EG',dim:'119,5 × 290 cm'},{ratio:119.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'119,5 × 290 cm'},{ratio:102.5,code:'F',description:'FB.EG',dim:'102,5 × 290 cm'}
+    ];
+    const bands=splitBandIntoParts('b-suedost',egLeft,'B-SO-EG-L',specs); if(bands[0]) bands[0].type='FB.EG'; out.push(...bands);
+  }
+  const egRight=byId.get('B-SO-EG-02');
+  if(egRight){
+    const specs=[
+      {ratio:119.5,code:'F',description:'FB.EG',dim:'119,5 × 290 cm'},{ratio:119.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'119,5 × 290 cm'},{ratio:127.5,code:'F',description:'FB.EG',dim:'127,5 × 290 cm'},{ratio:65.5,code:'F',description:'FB.EG',dim:'65,5 × 290 cm'},{ratio:102.5,code:'F',description:'FB.EG',dim:'102,5 × 290 cm'},{ratio:119.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'119,5 × 290 cm'},{ratio:119.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'119,5 × 290 cm'},{ratio:119.5,code:'F',description:'FB.EG',dim:'119,5 × 290 cm'},{ratio:101.5,code:'F',description:'FB.EG',dim:'101,5 × 290 cm'},{ratio:119.5,code:'FE',description:'FB.EG · mit Öffnungselement',dim:'119,5 × 290 cm'},{ratio:119.5,code:'F',description:'FB.EG',dim:'119,5 × 290 cm'}
+    ];
+    const bands=splitBandIntoParts('b-suedost',egRight,'B-SO-EG-R',specs); if(bands[0]) bands[0].type='FB.EG'; out.push(...bands);
+  }
+
+  cfg.geometry.filter(g=>g.level==='UG'&&g.kind==='window').sort((a,b)=>a.x-b.x).forEach((g,idx)=>{
+    const n=idx+1;
+    if(n<=8){
+      const p={id:`B-SO-F-UG-${String(n).padStart(2,'0')}`,view:'b-suedost',level:'UG',kind:'fenster',number:String(n).padStart(2,'0'),dim:'90 × 148,5 cm',description:'Lochfenster [F.3.2] · Dreh- / Kipp',elementCode:'F.3.2',x:g.x,y:g.y,w:g.w,h:g.h,dy:0};
+      out.push(makeIndividualWindowBand('b-suedost',g,p));
+    }
+  });
+  const ug1=bandRange(cfg.geometry.filter(g=>g.level==='UG'&&g.kind==='window').sort((a,b)=>a.x-b.x),9,12);
+  if(ug1) makeBand('B-SO-UG-FB31','UG','FB.3.1',ug1.x,ug1.y,ug1.w,ug1.h,[
+    {u:200,dim:'200 × 148,5 cm',code:'F/DK',description:descFor('FB.3.1','F/DK','200 × 148,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 148,5 cm',code:'P',description:panelLabel('40 × 148,5 cm'),color:panelColors.brown},
+    {u:80,dim:'80 × 148,5 cm',code:'DK',description:descFor('FB.3.1','DK','80 × 148,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 148,5 cm',code:'P',description:panelLabel('40 × 148,5 cm'),color:panelColors.brown},
+    {u:80,dim:'80 × 148,5 cm',code:'DK',description:descFor('FB.3.1','DK','80 × 148,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 148,5 cm',code:'P',description:panelLabel('40 × 148,5 cm'),color:panelColors.brown},
+    {u:200,dim:'200 × 148,5 cm',code:'F/DK',description:descFor('FB.3.1','F/DK','200 × 148,5 cm')}
+  ],'unten');
+  const ugDoor13=byId.get('B-SO-UG-13');
+  if(ugDoor13){
+    const p={id:'B-SO-UG-STU007',view:'b-suedost',level:'UG',kind:'fenster',number:'13',dim:'150 × 250 cm',description:'Stahl-Fassadentür · ST_B_-1_U007_1',elementCode:'T',x:ugDoor13.x,y:ugDoor13.y,w:ugDoor13.w,h:ugDoor13.h,dy:0};
+    out.push(makeIndividualWindowBand('b-suedost',ugDoor13,p));
+  }
+  const ug2=bandRange(cfg.geometry.filter(g=>g.level==='UG'&&g.kind==='window').sort((a,b)=>a.x-b.x),14,15);
+  if(ug2) makeBand('B-SO-UG-FB32','UG','FB.3.2',ug2.x,ug2.y,ug2.w,ug2.h,[
+    {u:80,dim:'80 × 148,5 cm',code:'DK',description:descFor('FB.3.2','DK','80 × 148,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 148,5 cm',code:'P',description:panelLabel('40 × 148,5 cm'),color:panelColors.brown},
+    {u:80,dim:'80 × 148,5 cm',code:'DK',description:descFor('FB.3.2','DK','80 × 148,5 cm')}
+  ],'unten');
+  const ugDoor16=byId.get('B-SO-UG-16');
+  if(ugDoor16){
+    const p={id:'B-SO-UG-STU002',view:'b-suedost',level:'UG',kind:'fenster',number:'16',dim:'150 × 250 cm',description:'Stahl-Fassadentür · ST_B_-1_U002_1',elementCode:'T',x:ugDoor16.x,y:ugDoor16.y,w:ugDoor16.w,h:ugDoor16.h,dy:0};
+    out.push(makeIndividualWindowBand('b-suedost',ugDoor16,p));
+  }
+  const ug3=bandRange(cfg.geometry.filter(g=>g.level==='UG'&&g.kind==='window').sort((a,b)=>a.x-b.x),17,18);
+  if(ug3) makeBand('B-SO-UG-FB33','UG','FB.3.3',ug3.x,ug3.y,ug3.w,ug3.h,[
+    {u:90,dim:'90 × 148,5 cm',code:'DK',description:descFor('FB.3.3','DK','90 × 148,5 cm')},
+    {u:40,kind:'paneel',dim:'40 × 148,5 cm',code:'P',description:panelLabel('40 × 148,5 cm'),color:panelColors.brown},
+    {u:200,dim:'200 × 148,5 cm',code:'F/DK',description:descFor('FB.3.3','F/DK','200 × 148,5 cm')}
+  ],'unten');
+
+  return out;
+}
+windowBands.push(...buildBSuedostWindowBands());
+
 function baseWindowPartById(id){
   for(const band of windowBands){const hit=band.parts.find(p=>p.id===id);if(hit)return hit;}
   return null;
