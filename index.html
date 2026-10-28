@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#1d1f22">
-<meta name="gym-sued-version" content="0.10.3">
+<meta name="gym-sued-version" content="0.10.4">
 <title>GymSüd · Fassaden-QS</title>
 <script>
 /* iOS WebKit sticky-header rasterization workaround, applied before first paint. */
@@ -95,12 +95,18 @@ svg{display:block;width:100%;height:auto;background:var(--sheet)}
 .nav-option{width:100%;border:0;background:transparent;color:var(--text);text-align:left;padding:11px 12px;border-radius:10px;font-weight:700;min-height:42px}
 .nav-option.current{background:color-mix(in srgb,var(--accent) 10%, transparent);color:var(--accent)}
 .nav-hint{padding:8px 12px 6px;color:var(--muted);font-size:12px;border-top:1px solid color-mix(in srgb,var(--soft) 55%, transparent);margin-top:4px}
-.selection-actions{position:fixed;left:10px;right:10px;bottom:max(8px,env(safe-area-inset-bottom));z-index:25;margin:0;display:none;gap:8px;padding:9px;background:var(--sheet);-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid var(--soft);border-radius:16px;box-shadow:var(--shadow)}
+.selection-actions{position:fixed;left:10px;right:10px;bottom:calc(86px + env(safe-area-inset-bottom));z-index:36;margin:0;display:none;gap:8px;padding:9px;background:var(--sheet);-webkit-backdrop-filter:none;backdrop-filter:none;border:1px solid var(--soft);border-radius:16px;box-shadow:var(--shadow)}
 /* Reserve space only while the fixed selection toolbar is visible. */
-body.has-selection .legend{padding-bottom:calc(82px + env(safe-area-inset-bottom))}
+body.has-selection .legend{padding-bottom:calc(160px + env(safe-area-inset-bottom))}
 .selection-actions.show{display:flex}
 .selection-actions button{flex:1;border:0;border-radius:12px;min-height:44px;background:var(--accent);color:white;font-weight:750}
 .selection-actions .secondary{background:var(--sheet);color:var(--text);border:1px solid var(--soft)}
+.selection-actions #bulkOpen{flex:2;background:var(--accent)}
+.selection-actions #bulkOpen:disabled{opacity:.45}
+.selection-actions .selection-caption{display:flex;align-items:center;font-size:12px;font-weight:750;white-space:nowrap;padding:0 3px}
+.bulk-percent{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:9px;font-size:12px;font-weight:700}
+.bulk-percent select{min-height:40px;min-width:140px;border:1px solid var(--soft);border-radius:10px;padding:7px;background:var(--bg);color:var(--text);font:inherit}
+@media(max-width:420px){.selection-actions{gap:5px;padding:7px}.selection-actions button{min-height:46px;font-size:12px}.selection-actions .selection-caption{font-size:11px}}
 .bulk-row{padding:13px 0;border-top:1px solid color-mix(in srgb,var(--soft) 55%, transparent)}.bulk-row:first-child{border-top:0}.bulk-row-title{font-weight:700;margin-bottom:9px}
 .bulk-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 .bulk-choice{min-height:40px;padding:7px 5px;border-radius:10px;border:1px solid var(--soft);background:var(--bg);color:var(--text);font-size:12px;font-weight:700;line-height:1.1}
@@ -323,7 +329,7 @@ body.overview-section .opening.overview-muted text{opacity:.65}
 <body>
 <header class="app-header">
   <div class="header-top">
-    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.10.3</span></div><div class="project-title" id="modeTitle">Fenster dicht</div><div class="house-progress" id="houseProgress" aria-label="Fortschritt Haus C"><span><b id="houseDichtPct">0 %</b><small>dicht</small></span><span><b id="houseTotalPct">0 %</b><small>gesamt</small></span></div></div>
+    <div class="project-block"><div class="eyebrow">GymSüd · 1640 <span class="release-id" id="releaseId" aria-label="App-Version">v0.10.4</span></div><div class="project-title" id="modeTitle">Fenster dicht</div><div class="house-progress" id="houseProgress" aria-label="Fortschritt Haus C"><span><b id="houseDichtPct">0 %</b><small>dicht</small></span><span><b id="houseTotalPct">0 %</b><small>gesamt</small></span></div></div>
     <button class="pill" id="fitBtn" type="button">Einpassen</button>
   </div>
   <div class="facade-nav">
@@ -375,14 +381,14 @@ body.overview-section .opening.overview-muted text{opacity:.65}
   </div>
   <p>Die Typkürzel beschreiben die Ausführung, nicht den Arbeitsstand.</p>
 </section>
-<div class="selection-actions" id="selectionBar"><button class="secondary" id="deselectBottom" type="button">Abbrechen</button><button id="bulkOpen" type="button">Status setzen</button></div>
+<div class="selection-actions" id="selectionBar" role="group" aria-label="Mehrfachauswahl bearbeiten"><span class="selection-caption" id="selectionBarCount">0 ausgewählt</span><button class="secondary" id="deselectBottom" type="button">Aufheben</button><button id="bulkOpen" type="button">Fortschritt gemeinsam setzen</button></div>
 
 <div class="nav-popover" id="houseMenu"><button class="nav-option" data-house="Haus A" type="button">Haus A</button><button class="nav-option" data-house="Haus B" type="button">Haus B</button><button class="nav-option current" data-house="Haus C" type="button">Haus C</button></div>
 <div class="nav-popover" id="viewMenu"><button class="nav-option current" data-house="Haus C" data-view="west" type="button">West</button><button class="nav-option" data-house="Haus C" data-view="east" type="button">Ost</button><button class="nav-option" data-house="Haus A" data-view="a-nordost" type="button">Nordost</button><button class="nav-option" data-house="Haus A" data-view="a-suedwest" type="button">Südwest</button><button class="nav-option" data-house="Haus B" data-view="b-nordwest" type="button">Nordwest</button><button class="nav-option" data-house="Haus B" data-view="b-suedost" type="button">Südost</button><div class="nav-hint">Weitere Fassadenansichten folgen.</div></div>
 <div class="scrim" id="scrim"></div>
 <input type="file" id="photoFileInput" accept="image/*" capture="environment" hidden aria-label="Foto aufnehmen">
 <section class="sheet" id="sheet" aria-modal="true" role="dialog"><div class="grabber-wrap"><div class="grabber"></div></div><h2 id="sheetTitle">Element</h2><div class="sheet-sub" id="sheetSub"></div><div class="detail-grid"><div class="detail-card"><small>Rohbauöffnung</small><b id="dimVal"></b></div><div class="detail-card"><small>Ebene</small><b id="levelVal"></b></div></div><div class="photo-entry"><button class="photo-entry-button" id="takePhoto" type="button">📷 Foto für dieses Feld aufnehmen</button><span class="photo-entry-info">Feldnummer automatisch im Bild · nur lokal auf dem Gerät</span></div><section class="photo-history" id="photoHistory" aria-label="Fotoprotokoll dieses Elements"><h3 class="photo-history-title">Fotoprotokoll <span class="photo-history-count" id="photoHistoryCount">0 Fotos</span></h3><div id="photoHistoryEntries" aria-live="polite"></div><p class="photo-history-info">Datum/Uhrzeit und Zusatztext werden im SGS-Fotoprotokoll synchronisiert – nicht die Bilddateien. Ein Protokolleintrag bestätigt nicht das Speichern in „Fotos“.</p></section><div id="steps"></div><div class="note-wrap"><label for="note">Restarbeit / Mangel-Hinweis</label><textarea id="note" placeholder="Text eingeben …"></textarea></div><div class="sheet-actions"><button class="close" id="closeSheet" type="button">Schließen</button><button class="save" id="saveSheet" type="button">Speichern</button></div></section>
-<section class="sheet" id="bulkSheet" aria-modal="true" role="dialog"><div class="grabber-wrap"><div class="grabber"></div></div><h2>Status setzen</h2><div class="sheet-sub" id="bulkSheetSub"></div><div class="bulk-summary" id="bulkSummary"></div><div id="bulkSteps"></div><div class="sheet-actions"><button class="close" id="closeBulkSheet" type="button">Abbrechen</button><button class="save" id="applyBulk" type="button">Anwenden</button></div></section>
+<section class="sheet" id="bulkSheet" aria-modal="true" role="dialog"><div class="grabber-wrap"><div class="grabber"></div></div><h2>Fortschritt gemeinsam setzen</h2><div class="sheet-sub" id="bulkSheetSub"></div><div class="bulk-summary" id="bulkSummary"></div><div id="bulkSteps"></div><div class="sheet-actions"><button class="close" id="closeBulkSheet" type="button">Abbrechen</button><button class="save" id="applyBulk" type="button">Anwenden</button></div></section>
 <section class="sheet" id="planEditSheet" aria-modal="true" role="dialog" aria-labelledby="planEditTitle">
   <div class="grabber-wrap"><div class="grabber"></div></div>
   <h2 id="planEditTitle">Plan bearbeiten</h2>
@@ -1851,7 +1857,7 @@ function renderOpenings(){
 function render(){ renderStatic(); renderOpenings(); renderWindowBands(); updateHouseProgress(); }
 function toggleSelect(id){ selected.has(id) ? selected.delete(id) : selected.add(id); renderOpenings();renderWindowBands(); }
 function clearSelection(){ selected.clear(); renderOpenings();renderWindowBands(); }
-function updateSelectionUI(){ const active=appSection!=='overview'&&selected.size>0; document.getElementById('selectedCount').textContent = selected.size; document.getElementById('selectionBar').classList.toggle('show', active); document.body.classList.toggle('has-selection', active); }
+function updateSelectionUI(){ const active=appSection!=='overview'&&selected.size>0; document.getElementById('selectedCount').textContent = selected.size; document.getElementById('selectionBarCount').textContent = selected.size+' ausgewählt'; document.getElementById('selectionBar').classList.toggle('show', active); document.body.classList.toggle('has-selection', active); }
 function findGeom(id){ return currentMode==='fenster'?windowById.get(id):Object.values(views).flatMap(v=>v.geometry).find(x=>x.id===id); }
 /* Modal isolation: stop the document AND the inertial SVG scroller behind a sheet.
    Remember the page position so dismissing the sheet never jumps the facade. */
@@ -1943,7 +1949,18 @@ function renderBulkSteps(){
       b.onclick=()=>{ bulkChoices[name]=value; renderBulkSteps(); updateBulkSummary(); };
       opts.appendChild(b);
     });
-    row.append(title,opts); c.appendChild(row);
+    row.append(title,opts);
+    if(currentMode==='rohbau'){
+      const line=document.createElement('label');line.className='bulk-percent';
+      line.textContent='Oder Zwischenstand für alle setzen';
+      const percent=document.createElement('select'); percent.setAttribute('aria-label',stepLabel(name)+' gemeinsamer Fortschritt');
+      const placeholder=document.createElement('option');placeholder.value='keep';placeholder.textContent='Prozent auswählen';percent.appendChild(placeholder);
+      for(let n=0;n<=100;n+=10){const o=document.createElement('option');o.value=String(n);o.textContent=n+' %';percent.appendChild(o);}
+      const current=bulkChoices[name]||'keep';percent.value=/^(?:100|[1-9]?\d)$/.test(String(current))?String(current):'keep';
+      percent.onchange=()=>{bulkChoices[name]=percent.value;renderBulkSteps();updateBulkSummary();};
+      line.appendChild(percent);row.appendChild(line);
+    }
+    c.appendChild(row);
   });
 }
 function openBulkSheet(){
@@ -1959,7 +1976,7 @@ function closeBulkSheet(){ document.getElementById('bulkSheet').classList.remove
 async function applyBulkChanges(){
   const changes=Object.entries(bulkChoices).filter(([,v])=>v&&v!=='keep');
   if(!changes.length) return;
-  selected.forEach(id=>{const st=stateFor(id);const p=currentMode==='fenster'?windowById.get(id):findGeom(id);changes.forEach(([name,value])=>{if(activeStepNamesFor(p).includes(name))st.steps[name]=value==='done'?100:value==='na'?'na':0;});});
+  selected.forEach(id=>{const st=stateFor(id);const p=currentMode==='fenster'?windowById.get(id):findGeom(id);changes.forEach(([name,value])=>{if(activeStepNamesFor(p).includes(name))st.steps[name]=value==='done'?100:value==='na'?'na':value==='todo'?0:Number(value);});});
   const button=document.getElementById('applyBulk');button.disabled=true;
   try{await saveActiveStorage(selected);renderOpenings();renderWindowBands();closeBulkSheet();}
   catch(error){alert('Sammeländerung nicht vollständig gespeichert: '+error.message+'\nBitte den Verbindungsstatus prüfen und erneut anwenden.');}
